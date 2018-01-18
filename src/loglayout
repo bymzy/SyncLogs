@@ -1,0 +1,25 @@
+
+
+LogFile Layout
+4 bytes magic
+4 bytes version
+
+LogRecord
+4 bytes bodyLength
+4 bytes crc
+4 bytes logid
+n bytes logRecordBody
+
+LogRecordBody
+4 bytes tableNameLength
+n bytes tableName
+
+4 bytes optype
+
+4 bytes keyLength
+n bytes key
+
+4 bytes valueLength
+n bytes value
+
+
