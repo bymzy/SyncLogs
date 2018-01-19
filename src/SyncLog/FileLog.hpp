@@ -19,7 +19,7 @@ class LogRecordBody
 public:
     LogRecordBody()
     {}
-    ~LogRecordBody()
+    virtual ~LogRecordBody()
     {}
 
 public:
@@ -76,7 +76,7 @@ class FileLogRecordBody : public LogRecordBody
 public:
     FileLogRecordBody():LogRecordBody()
     {}
-    ~FileLogRecordBody()
+    virtual ~FileLogRecordBody()
     {}
 
 public:

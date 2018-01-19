@@ -109,8 +109,6 @@ int Log::AppendLogRecord(LogRecord *pLogRecord)
 int LogRecord::ReadFromFile(FileHandler *fh)
 {
     int err = 0;
-    LogRecordBody *logRecordBody = NULL;
-    uint32_t tempRead = 0;
     char *bodyBuf = NULL;
     std::string base64Str;
     std::string pureStr;

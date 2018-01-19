@@ -71,7 +71,7 @@ public:
     }
 
     /* get total length of this msg , include head and real data */
-    int  GetTotalLen()
+    uint32_t GetTotalLen()
     {
         return mWriteOffset + HEAD_LENGTH;
     }
@@ -83,7 +83,7 @@ public:
     }
 
     /* get whole buffer size of msg buffer */
-    int GetMallocedSize()
+    uint32_t GetMallocedSize()
     {
         return mMallocSize;
     }
@@ -112,13 +112,13 @@ public:
 
 private:
     /* current left size */
-    int LeftSize()
+    uint32_t LeftSize()
     {
         return mMallocSize - mWriteOffset - HEAD_LENGTH;
     }
 
     /* dynamic revrese buffer size */
-    int Reverse(int size)
+    int Reverse(uint32_t size)
     {
         if (size < mMallocSize) {
             return 0;
@@ -165,13 +165,13 @@ private:
     char * mData;
 
     /* read offset of data not include 64bit head */
-    int mReadOffset;
+    uint32_t mReadOffset;
 
     /* write offset of data not include 64bit head */
-    int mWriteOffset;
+    uint32_t mWriteOffset;
 
     /* size alloced*/
-    int mMallocSize;
+    uint32_t mMallocSize;
 
 private:
     /*disable evil construction*/

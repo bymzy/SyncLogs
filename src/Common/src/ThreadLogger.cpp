@@ -43,6 +43,8 @@ ThreadLogger::Finit()
     if (mFileFd != -1) {
         close(mFileFd);
     }
+
+    return 0;
 }
 
 bool
@@ -98,16 +100,22 @@ ThreadLogger::HandleLog(OperContext *ctx)
 {
     Msg * msg = ctx->GetMessage();
     std::string log;
-    (*msg) >> log;
-    size_t writed = 0;
-    size_t left = log.length();
-    ssize_t hasWrited = 0;
 
-    while (hasWrited < log.length())  {
+    (*msg) >> log;
+    ssize_t writed = 0;
+    size_t toWrite = log.size(); 
+    size_t hasWrited = 0;
+
+    while (toWrite > 0)  {
         writed = write(mFileFd, 
                 log.c_str() + hasWrited,
-                log.length() - hasWrited);
-        hasWrited += writed;
+                toWrite);
+        if (writed < 0) {
+            fprintf(stderr, "Write Log File Failed!!!, err:%d\n", errno);
+            break;
+        } else {
+            hasWrited += (size_t)writed;
+        }
     }
 
     ++mLogCount;

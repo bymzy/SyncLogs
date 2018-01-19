@@ -68,8 +68,8 @@ public:
 
 public:
     /* current msg recv len */
-    int mToRecv;
-    int mRecved;
+    uint32_t mToRecv;
+    uint32_t mRecved;
     Msg *mCurrentRecvMsg;
 
     /* current msg send len */
