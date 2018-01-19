@@ -1,10 +1,12 @@
 
 
 #include "Log.hpp"
+#include "CRC.h"
 
 int main()
 {
     int err = 0;
+    mycrc32_init();
     {
         Log l("ddddd");
         err = l.OpenFile(true);

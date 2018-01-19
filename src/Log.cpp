@@ -10,7 +10,8 @@
 
 #include "Log.hpp"
 #include "Util.hpp"
-#include "base64.h"
+#include "Base64.hpp"
+#include "CRC.h"
 
 
 int Log::OpenFile(bool create)
@@ -126,7 +127,6 @@ int LogRecord::ReadFromFile(FileHandler *fh)
             break;
         }
         mCRC = ntohl(mCRC);
-        /* TODO check crc */
 
         err = fh->ReadNBytes((char *)&mLogId, 4);
         if (0 != err) {
@@ -144,6 +144,13 @@ int LogRecord::ReadFromFile(FileHandler *fh)
         assert(NULL != bodyBuf);
         err = fh->ReadNBytes(bodyBuf, mBodyLength);
         if (0 != err) {
+            break;
+        }
+
+        /* check crc */
+        if (mCRC != mycrc32(0, (const uint8_t *)bodyBuf, mBodyLength)) {
+            err = EINVAL;
+            ERROR_LOG("crc check failed!");
             break;
         }
 
@@ -184,8 +191,7 @@ int LogRecord::WriteToFile(FileHandler *fh)
             break;
         }
         mBodyLength = base64Str.length();
-        /* TODO enable crc */
-        mCRC = 0;
+        mCRC = mycrc32(0, (const uint8_t *)base64Str.c_str(), mBodyLength);
 
         tempValue = htonl(mBodyLength);
         err = fh->WriteNBytes((const char *)&tempValue, 4);
