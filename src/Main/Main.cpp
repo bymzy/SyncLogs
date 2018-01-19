@@ -4,6 +4,7 @@
 #include "include/Log.hpp"
 #include "include/CRC.h"
 #include "include/ThreadLogger.hpp"
+#include "PersistLogger.hpp"
 
 ThreadLogger *g_logger = NULL;
 
@@ -13,6 +14,11 @@ int main()
     mycrc32_init();
     g_logger = new ThreadLogger("SyncLog");
     g_logger->Start();
+
+    /* create persist logger and append log */
+    PersistLogger log("/tmp/log/");
+    log.RecoverFromLog();
+    return 0;
 
     {
         Log l("ddddd");
@@ -71,6 +77,7 @@ int main()
         }
     }
 
+    /* create PersistLogger and parse log */
     g_logger->Stop();
 
     return err;
