@@ -8,10 +8,10 @@
 #include <memory.h>
 #include <stdlib.h>
 
-#include "Log.hpp"
-#include "Util.hpp"
-#include "Base64.hpp"
-#include "CRC.h"
+#include "FileLog.hpp"
+#include "include/Base64.hpp"
+#include "include/CRC.h"
+#include "include/Common.hpp"
 
 
 int Log::OpenFile(bool create)
@@ -64,7 +64,7 @@ int Log::ValidateHeader()
             break;
         }
 
-        DEBUG_LOG(magic << ", " << version);
+        debug_log(magic << ", " << version);
     } while(0);
 
     return err;
@@ -150,13 +150,13 @@ int LogRecord::ReadFromFile(FileHandler *fh)
         /* check crc */
         if (mCRC != mycrc32(0, (const uint8_t *)bodyBuf, mBodyLength)) {
             err = EINVAL;
-            ERROR_LOG("crc check failed!");
+            error_log("crc check failed!");
             break;
         }
 
         base64Str.assign(bodyBuf, mBodyLength);
         if (!Base64::Decode(base64Str, &pureStr)) {
-            ERROR_LOG("base64 decode failed!");
+            error_log("base64 decode failed!");
             break;
         }
 
@@ -166,7 +166,7 @@ int LogRecord::ReadFromFile(FileHandler *fh)
             break;
         }
 
-        DEBUG_LOG("parse log record done, log id: " << mLogId);
+        debug_log("parse log record done, log id: " << mLogId);
     } while(0);
 
     if (NULL != bodyBuf) {
@@ -187,7 +187,7 @@ int LogRecord::WriteToFile(FileHandler *fh)
     do {
         mBody->Encode(pureStr);
         if (!Base64::Encode(pureStr, &base64Str)) {
-            ERROR_LOG("base64 encode failed!");
+            error_log("base64 encode failed!");
             break;
         }
         mBodyLength = base64Str.length();

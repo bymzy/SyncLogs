@@ -1,12 +1,19 @@
 
 
-#include "Log.hpp"
-#include "CRC.h"
+#include "FileLog.hpp"
+#include "include/Log.hpp"
+#include "include/CRC.h"
+#include "include/ThreadLogger.hpp"
+
+ThreadLogger *g_logger = NULL;
 
 int main()
 {
     int err = 0;
     mycrc32_init();
+    g_logger = new ThreadLogger("SyncLog");
+    g_logger->Start();
+
     {
         Log l("ddddd");
         err = l.OpenFile(true);
@@ -63,6 +70,8 @@ int main()
             rec.Dump();
         }
     }
+
+    g_logger->Stop();
 
     return err;
 }

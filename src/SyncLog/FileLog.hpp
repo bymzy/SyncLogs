@@ -1,17 +1,15 @@
 
 
-#ifndef __LOG_HPP__
-#define __LOG_HPP__
-
-/* A single process key-value database
- * */
+#ifndef __FILE_LOG_HPP__
+#define __FILE_LOG_HPP__
 
 #include <stdint.h>
 #include <string>
 #include <sstream>
 
+#include "include/Util.hpp"
+#include "include/Log.hpp"
 #include "FileHandler.hpp"
-#include "Util.hpp"
 
 #define LOG_MAGIC "LOGS"
 #define LOG_VERSION 1
@@ -131,7 +129,7 @@ public:
 
     void Dump()
     {
-        DEBUG_LOG("dump log record body, logid: " << mLogId
+        debug_log("dump log record body, logid: " << mLogId
                 << ", optype: " << mOpType
                 << ", " << mBody->GetDumpString());
     }

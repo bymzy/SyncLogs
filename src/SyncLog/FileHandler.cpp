@@ -9,7 +9,9 @@
 #include <stdlib.h>
 
 #include "FileHandler.hpp"
-#include "Util.hpp"
+#include "include/Util.hpp"
+#include "include/Common.hpp"
+#include "include/Log.hpp"
 
 int FileHandler::OpenFile(bool create)
 {
@@ -57,7 +59,7 @@ int FileHandler::ReadNBytes(char *buf, size_t toRead)
             break;
         }
         if (ret == 0) {
-            ERROR_LOG("file length not match");
+            error_log("file length not match");
             err = EIO;
             break;
         }

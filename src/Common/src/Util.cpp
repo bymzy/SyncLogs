@@ -114,43 +114,4 @@ uint64_t htonll(const uint64_t input)
     return (ntohll(input));
 }
 
-std::string i2s(const int& i)
-{
-    std::stringstream ss;
-    ss << i;
-    return ss.str();
-}
-
-int s2i(const std::string& s)
-{
-    int i;
-    std::stringstream ss;
-    ss<<s;
-    ss>>i;
-    return i;
-}
-
-std::string GetLogPrefix()
-{
-    char outstr[20];
-    char usec[9];
-    memset(outstr, 0, 100);
-    struct tm *temp;
-    time_t now = time(NULL);
-    temp = localtime(&now);
-    strftime(outstr, sizeof(outstr), "%Y-%m-%d %H:%M:%S", temp);
-
-    /* get usec */
-    struct timeval now2;
-    gettimeofday(&now2, NULL);
-    memset(usec, 0, 9);
-    sprintf(usec, ".%ld ", now2.tv_usec);
-
-    /* get thread LWP id */
-    pid_t pid = syscall(SYS_gettid);
-    std::string threadStr = "- LWP: " + i2s(pid) + " ";
-
-    return std::string(outstr) + std::string(usec) + threadStr;
-}
-
 

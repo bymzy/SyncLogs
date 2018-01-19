@@ -1,7 +1,7 @@
 
 
-#ifndef __FILE_HANDLER_HPP_
-#define __FILE_HANDLER_HPP_
+#ifndef __FILE_HANDLER_HPP__
+#define __FILE_HANDLER_HPP__
 
 #include <string>
 #include <stdint.h>

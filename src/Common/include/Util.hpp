@@ -20,24 +20,6 @@ char *writeString(char *buf, const std::string& data);
 uint64_t ntohll(const uint64_t input);
 uint64_t htonll(const uint64_t input);
 
-std::string i2s(const int& i);
-int s2i(const std::string& s);
-
-std::string GetLogPrefix();
-
-#define DEBUG_LOG(data)\
-    {\
-        std::cout << std::boolalpha << GetLogPrefix() << data << " [DEBUG] ["\
-           << __FILE__ << ":"<< __LINE__<< ":" << __FUNCTION__ << "]\n";\
-}\
-
-
-#define ERROR_LOG(data)\
-    {\
-        std::cerr << std::boolalpha << GetLogPrefix() << data << " [ERROR] ["\
-           << __FILE__ << ":"<< __LINE__<< ":" << __FUNCTION__ << "]\n";\
-}\
-
 #endif
 
 
