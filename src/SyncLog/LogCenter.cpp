@@ -4,14 +4,23 @@
 
 
 #include "LogCenter.hpp"
+#include "KVRequest.hpp"
+#include "LogContext.hpp"
+#include "KVDB.hpp"
 
-int LogCenter::AppendLogRecord(LogRecord *record)
+void LogCenter::HandleLocalContext(LogContext *logCtx)
 {
-    OperContext *ctx = new OperContext(OperContext::OP_LOCAL);
-    ctx->SetArg((void *)record);
-    assert(Enqueue(ctx));
-    OperContext::DecRef(ctx);
-    return 0;
+    switch (logCtx->GetCtxType()) {
+        case LogContext::LOG_recover_log:
+            UpdateDataStore((LogRecord*)logCtx->GetArg());
+            break;
+        default:
+            assert(0);
+            break;
+    }
+
+    logCtx->SetArg(NULL);
+    delete logCtx;
 }
 
 bool LogCenter::Process(OperContext *ctx)
@@ -19,7 +28,7 @@ bool LogCenter::Process(OperContext *ctx)
     bool processed = true;
     switch (ctx->GetType()) {
         case OperContext::OP_LOCAL:
-            HandleLog(ctx);
+            HandleLocalContext((LogContext*)ctx->GetArg());
             break;
         default:
             assert(0 && "invalid OperContext");
@@ -27,30 +36,33 @@ bool LogCenter::Process(OperContext *ctx)
             break;
     }
 
+    if (NULL != ctx->GetArg()) {
+        ctx->SetArg(NULL);
+    }
+
     return processed;
 }
 
-int LogCenter::HandleLog(OperContext *ctx)
+int LogCenter::UpdateDataStore(LogRecord *record)
 {
-    LogRecord *record = (LogRecord *)ctx->GetArg();
     LogRecordBody *body = record->GetRecordBody();
     int err = 0;
 
     switch (record->GetOpType()) {
-        case LogRecord::OP_put:
-            err = mDataStore.Put(body->GetTableName(), body->GetKey(), body->GetValue());
+        case KVRequest::OP_put:
+            err = KVDB::Instance()->GetDataStore()->Put(body->GetTableName(), body->GetKey(), body->GetValue());
             break;
-        case LogRecord::OP_add:
-            err = mDataStore.Add(body->GetTableName(), body->GetKey(), body->GetValue());
+        case KVRequest::OP_add:
+            err = KVDB::Instance()->GetDataStore()->Add(body->GetTableName(), body->GetKey(), body->GetValue());
             break;
-        case LogRecord::OP_del:
-            err = mDataStore.Del(body->GetTableName(), body->GetKey());
+        case KVRequest::OP_del:
+            err = KVDB::Instance()->GetDataStore()->Del(body->GetTableName(), body->GetKey());
             break;
-        case LogRecord::OP_drop_table:
-            err = mDataStore.DropTable(body->GetTableName());
+        case KVRequest::OP_drop_table:
+            err = KVDB::Instance()->GetDataStore()->DropTable(body->GetTableName());
             break;
-        case LogRecord::OP_add_table:
-            err = mDataStore.CreateTable(body->GetTableName());
+        case KVRequest::OP_add_table:
+            err = KVDB::Instance()->GetDataStore()->CreateTable(body->GetTableName());
             break;
         default:
             error_log("invalid LogRecord type: " << record->GetOpType());
@@ -59,8 +71,19 @@ int LogCenter::HandleLog(OperContext *ctx)
 
     /* record body is deleted in ~record() */
     delete record;
-    ctx->SetArg(NULL);
 
     return err;
 }
+
+int LogCenter::AppendLogRecord(LogRecord *record)
+{
+    OperContext *ctx = new OperContext(OperContext::OP_LOCAL);
+    LogContext *logCtx = new LogContext(LogContext::LOG_recover_log);
+    logCtx->SetArg(record);
+    ctx->SetArg((void *)logCtx);
+    assert(Enqueue(ctx));
+    OperContext::DecRef(ctx);
+    return 0;
+}
+
 

@@ -2,7 +2,7 @@
 
 #include "include/DirUtil.hpp"
 #include "PersistLogger.hpp"
-#include "LogCenter.hpp"
+#include "KVDB.hpp"
 
 uint32_t PersistLogger::GenerateLogId()
 {
@@ -35,6 +35,8 @@ int PersistLogger::RecoverFromLog()
 
         debug_log("dump log file end.")
 
+        /* TODO sync wait all log done ??*/
+
     } while(0);
 
     return err;
@@ -56,7 +58,7 @@ int PersistLogger::RedoLogFile(std::string logFileName)
         record = new LogRecord;
 
         while (0 == (err = log.GetNextLogRecord(record))) {
-            mLogCenter->AppendLogRecord(record);
+            KVDB::Instance()->GetLogCenter()->AppendLogRecord(record);
         }
 
     } while(0);

@@ -98,14 +98,6 @@ public:
             mBody = NULL;
         }
     }
-    enum _OpType {
-        OP_put,
-        OP_add,
-        OP_del,
-        OP_get,
-        OP_drop_table,
-        OP_add_table,
-    }OpType;
 
 public:
     int ReadFromFile(FileHandler *fh);

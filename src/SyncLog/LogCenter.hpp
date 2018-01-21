@@ -8,6 +8,9 @@
 #include "include/LogicService.hpp"
 #include "FileLog.hpp"
 #include "DataStore.hpp"
+#include "LogContext.hpp"
+
+/* read/write log and update datastore */
 
 class LogCenter : public LogicService
 {
@@ -24,10 +27,8 @@ public:
 
 public:
     int AppendLogRecord(LogRecord *record);
-    int HandleLog(OperContext *ctx);
-
-private:
-    DataStore mDataStore;
+    int UpdateDataStore(LogRecord *record);
+    void HandleLocalContext(LogContext *logCtx);
 };
 
 #endif //PROJECT_LOGCENTER_HPP

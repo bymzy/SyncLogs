@@ -4,8 +4,7 @@
 #define __PERSIST_LOGGER_HPP__
 
 #include "FileLog.hpp"
-
-class LogCenter;
+#include "LogCenter.hpp"
 
 class PersistLogger
 {
@@ -25,13 +24,14 @@ public:
 public:
     uint32_t GenerateLogId();
     int RecoverFromLog();
+
+private:
     int RedoLogFile(std::string logFileName);
 
 private:
     Log *mCurrentLog; 
     std::string mLogDir;
     uint32_t mMaxLogId;
-    LogCenter *mLogCenter;
 };
 
 #endif
