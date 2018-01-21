@@ -7,7 +7,7 @@
 #include <dirent.h>
 
 #include <string>
-#include <vector>
+#include <set>
 
 class DirUtil
 {
@@ -26,7 +26,7 @@ public:
 public:
     int OpenDir();
     struct dirent *GetNextEntry();
-    int GetAllFileWithSuffix(std::string suffix, std::vector<std::string>& vec);
+    int GetAllFileWithSuffix(std::string suffix, std::set<std::string>& fileSet);
 
 public:
     DIR *mDp;

@@ -5,6 +5,8 @@
 
 #include "FileLog.hpp"
 
+class LogCenter;
+
 class PersistLogger
 {
 public:
@@ -23,12 +25,13 @@ public:
 public:
     uint32_t GenerateLogId();
     int RecoverFromLog();
-    int AppendLogRecord(LogRecord *record);
+    int RedoLogFile(std::string logFileName);
 
 private:
     Log *mCurrentLog; 
     std::string mLogDir;
     uint32_t mMaxLogId;
+    LogCenter *mLogCenter;
 };
 
 #endif

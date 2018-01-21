@@ -2,7 +2,6 @@
 
 #include <string.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #include <sys/syscall.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -115,6 +114,7 @@ ThreadLogger::HandleLog(OperContext *ctx)
             break;
         } else {
             hasWrited += (size_t)writed;
+            toWrite -= (size_t)writed;
         }
     }
 

@@ -2,6 +2,7 @@
 
 #include "include/DirUtil.hpp"
 #include "PersistLogger.hpp"
+#include "LogCenter.hpp"
 
 uint32_t PersistLogger::GenerateLogId()
 {
@@ -11,7 +12,8 @@ uint32_t PersistLogger::GenerateLogId()
 int PersistLogger::RecoverFromLog()
 {
     int err = 0;
-    std::vector<std::string> logFiles;
+    std::set<std::string> logFiles;
+    std::set<std::string>::iterator logIter;
 
     /* loop dir to get logfile */
     DirUtil dirUtil(mLogDir);
@@ -23,18 +25,43 @@ int PersistLogger::RecoverFromLog()
         }
 
         dirUtil.GetAllFileWithSuffix(".log", logFiles);
-        
-        /* TODO sort logFiles */
+
+        debug_log("dump log file: ")
+        logIter = logFiles.begin();
+        for (;logIter != logFiles.end(); ++logIter) {
+            debug_log("logFile: " << *logIter);
+            RedoLogFile(*logIter);
+        }
+
+        debug_log("dump log file end.")
 
     } while(0);
 
     return err;
 }
 
-int PersistLogger::AppendLogRecord(LogRecord *record)
+int PersistLogger::RedoLogFile(std::string logFileName)
 {
-    return 0;
+    int err = 0;
+    Log log(logFileName);
+    LogRecord *record = NULL;
 
+    do {
+        err = log.OpenFile(false);
+        if (0 != err) {
+            error_log("open log faile " << logFileName << " failed!, err: " << err)
+            break;
+        }
+
+        record = new LogRecord;
+
+        while (0 == (err = log.GetNextLogRecord(record))) {
+            mLogCenter->AppendLogRecord(record);
+        }
+
+    } while(0);
+
+    return err;
 }
 
 

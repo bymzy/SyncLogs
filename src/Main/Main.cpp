@@ -18,6 +18,7 @@ int main()
     /* create persist logger and append log */
     PersistLogger log("/tmp/log/");
     log.RecoverFromLog();
+    g_logger->Stop();
     return 0;
 
     {

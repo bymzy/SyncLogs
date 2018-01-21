@@ -10,8 +10,7 @@
 
 class OperContext {
 public:
-    enum _type
-    {
+    enum _type {
         /* message to send or received*/
         OP_RECV = 0,
         OP_SEND,
@@ -22,6 +21,8 @@ public:
         OP_ACCEPT,
         /* client droped */
         OP_DROP,
+        /* context from local */
+        OP_LOCAL,
     };
     
     struct destAddr {
@@ -43,8 +44,7 @@ public:
     }
 
 public:
-    void SetDest(std::string ip, unsigned short port)
-    {
+    void SetDest(std::string ip, unsigned short port) {
         mDest.ip = ip;
         mDest.port = port;
     }
@@ -74,6 +74,17 @@ public:
     {
         assert(NULL != mUnion.mSyncClosure);
         return mUnion.mSyncClosure;
+    }
+
+    void SetArg(void *arg)
+    {
+        mUnion.mArg = arg;
+    }
+
+    void *GetArg()
+    {
+        assert(NULL != mUnion.mArg);
+        return mUnion.mArg;
     }
 
     uint64_t GetConnID()
@@ -113,6 +124,7 @@ public:
     union {
         Msg *mMsg;
         SyncClosure *mSyncClosure;
+        void *mArg;
     } mUnion;
     /* client fd accepted */
     int mSocket;

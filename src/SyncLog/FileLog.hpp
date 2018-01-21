@@ -31,9 +31,9 @@ public:
         mTableName = val;
     }
 
-    void GetTableName(std::string *val)
+    std::string GetTableName()
     {
-        *val = mTableName;
+        return mTableName;
     }
 
     void SetKey(std::string val)
@@ -41,9 +41,9 @@ public:
         mKey = val;
     }
 
-    void GetKey(std::string *val)
+    std::string GetKey()
     {
-        *val = mKey;
+        return mKey;
     }
 
     void SetValue(std::string val)
@@ -51,9 +51,9 @@ public:
         mValue = val;
     }
 
-    void GetValue(std::string *val)
+    std::string GetValue()
     {
-        *val = mValue;
+        return mValue;
     }
 
     std::string GetDumpString()
@@ -92,7 +92,20 @@ public:
         mBody = NULL;
     }
     ~LogRecord()
-    {}
+    {
+        if (NULL != mBody) {
+            delete mBody;
+            mBody = NULL;
+        }
+    }
+    enum _OpType {
+        OP_put,
+        OP_add,
+        OP_del,
+        OP_get,
+        OP_drop_table,
+        OP_add_table,
+    }OpType;
 
 public:
     int ReadFromFile(FileHandler *fh);
@@ -107,14 +120,19 @@ public:
         mBody = body;
     }
 
+    LogRecordBody *GetRecordBody()
+    {
+        return mBody;
+    }
+
     void SetLogId(uint32_t id)
     {
         mLogId = id;
     }
 
-    void GetLogId(uint32_t* id)
+    uint32_t GetLogId()
     {
-        *id = mLogId;
+        return mLogId;
     }
 
     void SetOpType(uint32_t type)
@@ -122,9 +140,9 @@ public:
         mOpType = type;
     }
 
-    void GetOpType(uint32_t *type)
+    uint32_t GetOpType()
     {
-        *type = mOpType;
+        return mOpType;
     }
 
     void Dump()
