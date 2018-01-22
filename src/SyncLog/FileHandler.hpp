@@ -29,6 +29,19 @@ public:
     int ReadCString(char **buf, uint32_t& size);
     int Close();
     int SyncToDisk();
+    off_t GetOffset()
+    {
+        return mOffset;
+    }
+    void SetOffset(off_t offset)
+    {
+        mOffset = offset;
+    }
+
+    int Truncate(off_t offset)
+    {
+        return ftruncate(mFD, offset);
+    }
 
 private:
     int mFD;

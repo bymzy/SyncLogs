@@ -11,7 +11,7 @@ void RequestCenter::EnqueueKVRequest(KVRequest *request)
     OperContext *ctx = new OperContext(OperContext::OP_LOCAL);
     LogContext *logCtx = new LogContext(LogContext::REQUEST_recv_data_request);
     logCtx->SetArg(request);
-    ctx->SetArg((void *)request);
+    ctx->SetArg((void *)logCtx);
 
     Enqueue(ctx);
     OperContext::DecRef(ctx);

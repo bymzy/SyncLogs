@@ -16,6 +16,8 @@ public:
         E_KEY_EXIST,
 
         /* logic error */
+        E_CRC_CHECK_FAILED,
+        E_BASE64_DECODE_FAILED,
     };
 };
 

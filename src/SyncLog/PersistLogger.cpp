@@ -58,31 +58,34 @@ int PersistLogger::RedoLogFile(std::string logFileName)
         while (0 == (err = log.GetNextLogRecord(record))) {
             KVDB::Instance()->GetLogCenter()->AppendLogRecord(record, 
                     LogContext::LOG_recover_log);
+
+            /* update max log id */
+            KVDB::Instance()->GetLogCenter()->SetMaxLogId(record->GetLogId());
         }
 
+        KVDB::Instance()->SetEpoch(ParseEpochFromLogName(logFileName));
+
+        /* TODO EIO means the end of file */
+        if (EIO == err) {
+            err = 0;
+            break;
+        }
     } while(0);
 
     return err;
 }
 
-std::string PersistLogger::GetEpochString(uint32_t epoch)
+std::string PersistLogger::Dec2HexString(uint32_t val, uint32_t bitCount)
 {
     /* 8 chars hex */
     std::stringstream ss;
-    ss.fill(0);
-    ss << std::hex << std::setw(8) << epoch;
+    ss << std::hex << val;
+    std::string temp, temp2;
+    temp = ss.str();
+    temp2.assign(bitCount - temp.length(), '0');
+    temp2 += temp;
 
-    return ss.str();
-}
-
-std::string PersistLogger::GetLogIndexString(uint32_t index)
-{
-    /* 8 chars hex */
-    std::stringstream ss;
-    ss.fill(0);
-    ss << std::hex << std::setw(8) << index;
-
-    return ss.str();
+    return temp2;
 }
 
 int PersistLogger::OpenNewLogFile()
@@ -93,19 +96,32 @@ int PersistLogger::OpenNewLogFile()
         mCurrentLog = NULL;
     }
 
-    std::string logFileName = mLogDir + GetEpochString(KVDB::Instance()->GetEpoch())
-        + GetLogIndexString(mMaxLogId / 2000);
+    std::string logFileName = mLogDir 
+        + Dec2HexString(KVDB::Instance()->GetEpoch(), 8)
+        + Dec2HexString(KVDB::Instance()->GetLogCenter()->GetMaxLogId() / 2000, 8)
+        + ".log";
 
     mCurrentLog = new Log(logFileName);
     debug_log("new log file name: " << logFileName);
     return mCurrentLog->OpenFile(true);
 }
 
+uint64_t PersistLogger::ParseEpochFromLogName(std::string name)
+{
+    uint64_t epoch;
+    std::string epochString = name.substr(0, 8);
+    std::stringstream ss;
+    ss << std::hex << epochString;
+    ss >> epoch;
+
+    return epoch;
+}
+
 bool PersistLogger::NeedOpenNewLogFile()
 {
-    if (0 == (mMaxLogId % 2000)) {
+    if (0 == (KVDB::Instance()->GetLogCenter()->GetMaxLogId() % 2000)) {
         return true;
-    } 
+    }
 
     return false;
 }

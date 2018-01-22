@@ -19,7 +19,8 @@ public:
     {}
 
 public:
-    int Start() {
+    int Start() 
+    {
         int err = 0;
         do {
             err = mLogCenter.Start();
@@ -28,6 +29,11 @@ public:
             }
 
             err = mRequestCenter.Start();
+            if (0 != err) {
+                break;
+            }
+
+            err = mPersistLogger.RecoverFromLog();
             if (0 != err) {
                 break;
             }
@@ -48,7 +54,7 @@ public:
 public:
     static KVDB *Instance()
     {
-        static KVDB kvdb("/tmp/log");
+        static KVDB kvdb("/tmp/log/");
         return &kvdb;
     }
 
@@ -86,6 +92,11 @@ public:
     uint64_t GetEpoch()
     {
         return mDBEpoch;
+    }
+
+    void SetEpoch(uint64_t epoch)
+    {
+        mDBEpoch = epoch;
     }
 
 private:

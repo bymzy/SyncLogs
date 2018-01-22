@@ -12,6 +12,9 @@ public:
     PersistLogger(std::string logDir):
         mCurrentLog(NULL), mLogDir(logDir), mMaxLogId(0)
     {
+        if (mLogDir[mLogDir.length() - 1] != '/') {
+            mLogDir.append("/");
+        }
     }
     ~PersistLogger()
     {
@@ -29,11 +32,11 @@ private:
     int RedoLogFile(std::string logFileName);
     int OpenNewLogFile();
     bool NeedOpenNewLogFile();
-    std::string GetEpochString(uint32_t epoch);
-    std::string GetLogIndexString(uint32_t index);
+    std::string Dec2HexString(uint32_t val, uint32_t bitCount);
+    uint64_t ParseEpochFromLogName(std::string name);
 
 private:
-    Log *mCurrentLog; 
+    Log *mCurrentLog;
     std::string mLogDir;
     uint32_t mMaxLogId;
 };

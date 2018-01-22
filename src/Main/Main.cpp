@@ -5,6 +5,7 @@
 #include "include/CRC.h"
 #include "include/ThreadLogger.hpp"
 #include "PersistLogger.hpp"
+#include "KVDB.hpp"
 
 ThreadLogger *g_logger = NULL;
 
@@ -15,9 +16,15 @@ int main()
     g_logger = new ThreadLogger("SyncLog");
     g_logger->Start();
 
-    /* create persist logger and append log */
-    PersistLogger log("/tmp/log/");
-    log.RecoverFromLog();
+    KVDB::Instance()->Start();
+    KVRequest req;
+    req.mOpType = KVRequest::OP_add_table;
+    req.mTableName = "testtable";
+    KVDB::Instance()->PostKVRequest(&req);
+
+    std::cout << req.mErr << std::endl;
+
+    KVDB::Instance()->Stop();
     g_logger->Stop();
     return 0;
 

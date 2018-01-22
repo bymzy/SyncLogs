@@ -12,6 +12,7 @@
 #include "include/Base64.hpp"
 #include "include/CRC.h"
 #include "include/Common.hpp"
+#include "Err.hpp"
 
 
 int Log::OpenFile(bool create)
@@ -117,6 +118,7 @@ int LogRecord::ReadFromFile(FileHandler *fh)
     char *bodyBuf = NULL;
     std::string base64Str;
     std::string pureStr;
+    off_t tempOffset = fh->GetOffset();
 
     do {
         err = fh->ReadNBytes((char *)&mBodyLength, 4);
@@ -152,13 +154,14 @@ int LogRecord::ReadFromFile(FileHandler *fh)
 
         /* check crc */
         if (mCRC != mycrc32(0, (const uint8_t *)bodyBuf, mBodyLength)) {
-            err = EINVAL;
+            err = Err::E_CRC_CHECK_FAILED;
             error_log("crc check failed!");
             break;
         }
 
         base64Str.assign(bodyBuf, mBodyLength);
         if (!Base64::Decode(base64Str, &pureStr)) {
+            err = Err::E_BASE64_DECODE_FAILED;
             error_log("base64 decode failed!");
             break;
         }
@@ -175,6 +178,12 @@ int LogRecord::ReadFromFile(FileHandler *fh)
     if (NULL != bodyBuf) {
         free(bodyBuf);
         bodyBuf = NULL;
+    }
+
+    if (EIO == err) {
+        debug_log("reach end of file, try truncate it!");
+        fh->SetOffset(tempOffset);
+        err = fh->Truncate(tempOffset);
     }
 
     return err;

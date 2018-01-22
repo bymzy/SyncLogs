@@ -37,6 +37,14 @@ public:
     void AppendLogRecord(LogRecord *record, uint32_t logContextType);
     void HandleLocalContext(LogContext *logCtx);
     uint64_t GenerateLogId();
+    uint64_t GetMaxLogId()
+    {
+        return mMaxLogId;
+    }
+    void SetMaxLogId(uint64_t id)
+    {
+        mMaxLogId = id;
+    }
 
 private:
     int UpdateDataStore(LogRecord *record);
