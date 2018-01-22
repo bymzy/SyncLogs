@@ -46,6 +46,30 @@ int FileHandler::OpenFile(bool create)
     return err;
 }
 
+int FileHandler::SyncToDisk()
+{
+    return fsync(mFD);
+}
+
+int FileHandler::Close()
+{
+    int err = 0;
+    do {
+        if (-1 == mFD) {
+            break;
+        }
+
+        err = fsync(mFD);
+        assert(err == 0);
+
+        close(mFD);
+        mFD = -1;
+
+    } while(0);
+
+    return err;
+}
+
 int FileHandler::ReadNBytes(char *buf, size_t toRead)
 {
     int err = 0;

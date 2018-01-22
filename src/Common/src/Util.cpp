@@ -11,6 +11,7 @@
 #include <stdlib.h>
 
 #include <sstream>
+#include <bitset>
 #include "Util.hpp"
 
 const char *readInt(const char *buf, uint32_t  *val)

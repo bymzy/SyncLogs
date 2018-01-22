@@ -10,11 +10,15 @@
 class LogContext {
 public:
     enum _LogContext {
+        /* in LogCenter */
         LOG_recover_log = 0,
         LOG_write_log,
+        LOG_read_data,
 
-        REQUEST_recv_data_request,
+        /* in RequestCenter */
         REQUEST_finish_data_request,
+        REQUEST_read_data_request,
+        REQUEST_recv_data_request,
     };
 
 public:

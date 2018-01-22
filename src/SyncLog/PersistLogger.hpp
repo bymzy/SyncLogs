@@ -22,11 +22,15 @@ public:
     }
 
 public:
-    uint32_t GenerateLogId();
     int RecoverFromLog();
+    int WriteLog(LogRecord *record);
 
 private:
     int RedoLogFile(std::string logFileName);
+    int OpenNewLogFile();
+    bool NeedOpenNewLogFile();
+    std::string GetEpochString(uint32_t epoch);
+    std::string GetLogIndexString(uint32_t index);
 
 private:
     Log *mCurrentLog; 

@@ -18,8 +18,7 @@ public:
     ~FileHandler()
     {
         if (-1 != mFD) {
-            close(mFD);
-            mFD = -1;
+            Close();
         }
     }
 
@@ -28,6 +27,8 @@ public:
     int ReadNBytes(char *buf, size_t count);
     int WriteNBytes(const char *buf, size_t count);
     int ReadCString(char **buf, uint32_t& size);
+    int Close();
+    int SyncToDisk();
 
 private:
     int mFD;

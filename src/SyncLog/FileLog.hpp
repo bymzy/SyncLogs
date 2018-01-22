@@ -167,6 +167,7 @@ public:
     int GetNextLogRecord(LogRecord* pLogRecord);
     int OpenFile(bool create);
     int AppendLogRecord(LogRecord *pLogRecord);
+    int Close();
 
 private:
     int ValidateHeader();

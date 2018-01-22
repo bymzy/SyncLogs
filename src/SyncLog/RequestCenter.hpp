@@ -16,6 +16,19 @@
 /* handle kv request
  * hold request context
  * */
+class LogResponse
+{
+public:
+    LogResponse():mErr(0),mRequestId(0)
+    {}
+    ~LogResponse()
+    {}
+
+public:
+    uint32_t mErr;
+    uint64_t mRequestId;
+    std::string mValue;
+};
 
 class RequestCenter : public LogicService
 {
@@ -30,15 +43,18 @@ public:
 public:
     virtual bool Process(OperContext *ctx);
     void EnqueueKVRequest(KVRequest *request);
-    void HandleNewKVRequest(KVRequest *request);
+    void ReceiveKVResponse(uint64_t requestId, uint32_t err,  const std::string& value);
 
 private:
+    void HandleNewKVRequest(KVRequest *request);
     void HandleLocalRequest(LogContext *logCtx);
+    void HandleKVResponse(LogResponse *resp);
 
 private:
     uint64_t mRequestID;
     std::map<uint64_t, KVRequest*> mRequests;
 };
 
+#endif
 
-#endif //PROJECT_REQUESTCENTER_HPP
+

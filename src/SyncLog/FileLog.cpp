@@ -35,6 +35,11 @@ int Log::OpenFile(bool create)
     return err;
 }
 
+int Log::Close()
+{
+    return mFileHandler.Close();
+}
+
 int Log::ValidateHeader()
 {
     int err = 0;

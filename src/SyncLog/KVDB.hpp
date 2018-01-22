@@ -83,11 +83,17 @@ public:
         return &mRequestCenter;
     }
 
+    uint64_t GetEpoch()
+    {
+        return mDBEpoch;
+    }
+
 private:
     PersistLogger mPersistLogger;
     DataStore mDataStore;
     LogCenter mLogCenter;
     RequestCenter mRequestCenter;
+    uint64_t mDBEpoch;
 };
 
 #endif //PROJECT_KVDB_HPP
