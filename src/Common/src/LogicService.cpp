@@ -51,7 +51,7 @@ LogicService::Run()
     }
 
     Finit();
-    std::cout << "logic service exit! vec size: " <<  ctxVec.size() <<",cap: "<< ctxVec.capacity() << std::endl;
+    //std::cout << "logic service exit! vec size: " <<  ctxVec.size() <<",cap: "<< ctxVec.capacity() << std::endl;
 }
 
 /* Start only return */

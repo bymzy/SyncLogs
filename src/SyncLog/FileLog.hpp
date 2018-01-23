@@ -137,11 +137,13 @@ public:
         return mOpType;
     }
 
-    void Dump()
+    std::string GetDumpString()
     {
-        debug_log("dump log record body, logid: " << mLogId
+        std::stringstream ss;
+        ss << "dump log record body, logid: " << mLogId
                 << ", optype: " << mOpType
-                << ", " << mBody->GetDumpString());
+                << ", " << mBody->GetDumpString();
+        return ss.str();
     }
 
 private:
@@ -164,7 +166,7 @@ public:
     }
 
 public:
-    int GetNextLogRecord(LogRecord* pLogRecord);
+    int GetNextLogRecord(LogRecord** ppLogRecord);
     int OpenFile(bool create);
     int AppendLogRecord(LogRecord *pLogRecord);
     int Close();

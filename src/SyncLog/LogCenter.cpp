@@ -12,7 +12,7 @@ void LogCenter::HandleLocalContext(LogContext *logCtx)
 {
     switch (logCtx->GetCtxType()) {
         case LogContext::LOG_recover_log:
-            UpdateDataStore((LogRecord*)logCtx->GetArg());
+            HandleRecoverLog((LogRecord*)logCtx->GetArg());
             break;
         case LogContext::LOG_write_log:
             HandleWriteOper((LogRecord*)logCtx->GetArg());
@@ -77,10 +77,15 @@ int LogCenter::UpdateDataStore(LogRecord *record)
             assert(0);
     }
 
+    return err;
+}
+
+void LogCenter::HandleRecoverLog(LogRecord *record)
+{
+    UpdateDataStore(record);
+
     /* record body is deleted in ~record() */
     delete record;
-
-    return err;
 }
 
 int LogCenter::HandleWriteOper(LogRecord *record)
@@ -108,6 +113,7 @@ int LogCenter::HandleWriteOper(LogRecord *record)
             break;
         }
 
+
     } while(0);
 
     /* step3
@@ -120,6 +126,7 @@ int LogCenter::HandleWriteOper(LogRecord *record)
     KVDB::Instance()->GetRequestCenter()->ReceiveKVResponse(iter->second,
             err, "");
 
+    delete record;
     return err;
 }
 

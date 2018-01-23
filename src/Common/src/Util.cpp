@@ -115,4 +115,11 @@ uint64_t htonll(const uint64_t input)
     return (ntohll(input));
 }
 
+uint64_t time_now()
+{
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return ((tv.tv_sec) * 1000000+ tv.tv_usec);
+}
+
 

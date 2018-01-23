@@ -46,7 +46,7 @@ int FileHandler::OpenFile(bool create)
     return err;
 }
 
-int FileHandler::SyncToDisk()
+int FileHandler::Sync()
 {
     return fsync(mFD);
 }

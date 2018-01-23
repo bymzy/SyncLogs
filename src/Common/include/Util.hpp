@@ -20,6 +20,8 @@ char *writeString(char *buf, const std::string& data);
 uint64_t ntohll(const uint64_t input);
 uint64_t htonll(const uint64_t input);
 
+uint64_t time_now();
+
 #endif
 
 

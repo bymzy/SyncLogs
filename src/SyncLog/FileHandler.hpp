@@ -28,7 +28,7 @@ public:
     int WriteNBytes(const char *buf, size_t count);
     int ReadCString(char **buf, uint32_t& size);
     int Close();
-    int SyncToDisk();
+    int Sync();
     off_t GetOffset()
     {
         return mOffset;

@@ -98,10 +98,11 @@ int Log::WriteHeader()
     return err;
 }
 
-int Log::GetNextLogRecord(LogRecord *pLogRecord)
+int Log::GetNextLogRecord(LogRecord **ppLogRecord)
 {
     int err = 0;
-    err = pLogRecord->ReadFromFile(&mFileHandler);
+    *ppLogRecord = new LogRecord;
+    err = (*ppLogRecord)->ReadFromFile(&mFileHandler);
     return err;
 }
 
@@ -172,7 +173,7 @@ int LogRecord::ReadFromFile(FileHandler *fh)
             break;
         }
 
-        debug_log("parse log record done, log id: " << mLogId);
+        debug_log("parse log record done, record: " <<  GetDumpString());
     } while(0);
 
     if (NULL != bodyBuf) {
@@ -183,7 +184,7 @@ int LogRecord::ReadFromFile(FileHandler *fh)
     if (EIO == err) {
         debug_log("reach end of file, try truncate it!");
         fh->SetOffset(tempOffset);
-        err = fh->Truncate(tempOffset);
+        assert(0 == fh->Truncate(tempOffset));
     }
 
     return err;
@@ -205,6 +206,7 @@ int LogRecord::WriteToFile(FileHandler *fh)
         mBodyLength = base64Str.length();
         mCRC = mycrc32(0, (const uint8_t *)base64Str.c_str(), mBodyLength);
 
+        /* TODO one write? */
         tempValue = htonl(mBodyLength);
         err = fh->WriteNBytes((const char *)&tempValue, 4);
         if (0 != err) {
@@ -233,6 +235,13 @@ int LogRecord::WriteToFile(FileHandler *fh)
         if (0 != err) {
             break;
         }
+
+#if 0
+        err = fh->Sync();
+        if (0 != err) {
+            break;
+        }
+#endif
 
     } while(0);
 

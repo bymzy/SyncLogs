@@ -38,6 +38,8 @@ public:
                 break;
             }
 
+            NotifyNewEpoch();
+
         } while(0);
 
         return err;
@@ -97,6 +99,11 @@ public:
     void SetEpoch(uint64_t epoch)
     {
         mDBEpoch = epoch;
+    }
+
+    void NotifyNewEpoch()
+    {
+        ++mDBEpoch;
     }
 
 private:

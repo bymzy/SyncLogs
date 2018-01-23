@@ -49,6 +49,7 @@ public:
 private:
     int UpdateDataStore(LogRecord *record);
     int HandleWriteOper(LogRecord *record);
+    void HandleRecoverLog(LogRecord *record);
     void HandleReadData(GetReq *req);
     void AppendGetRequest(GetReq *req);
 

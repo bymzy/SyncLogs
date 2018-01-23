@@ -7,6 +7,8 @@
 
 #include <iomanip>
 
+#define LOG_PER_FILE 5000
+
 int PersistLogger::RecoverFromLog()
 {
     int err = 0;
@@ -53,9 +55,7 @@ int PersistLogger::RedoLogFile(std::string logFileName)
             break;
         }
 
-        record = new LogRecord;
-
-        while (0 == (err = log.GetNextLogRecord(record))) {
+        while (0 == (err = log.GetNextLogRecord(&record))) {
             KVDB::Instance()->GetLogCenter()->AppendLogRecord(record, 
                     LogContext::LOG_recover_log);
 
@@ -98,7 +98,7 @@ int PersistLogger::OpenNewLogFile()
 
     std::string logFileName = mLogDir 
         + Dec2HexString(KVDB::Instance()->GetEpoch(), 8)
-        + Dec2HexString(KVDB::Instance()->GetLogCenter()->GetMaxLogId() / 2000, 8)
+        + Dec2HexString(KVDB::Instance()->GetLogCenter()->GetMaxLogId() / LOG_PER_FILE, 8)
         + ".log";
 
     mCurrentLog = new Log(logFileName);
@@ -109,7 +109,8 @@ int PersistLogger::OpenNewLogFile()
 uint64_t PersistLogger::ParseEpochFromLogName(std::string name)
 {
     uint64_t epoch;
-    std::string epochString = name.substr(0, 8);
+    std::string baseName(basename(name.c_str()));
+    std::string epochString = baseName.substr(0, 8);
     std::stringstream ss;
     ss << std::hex << epochString;
     ss >> epoch;
@@ -119,7 +120,7 @@ uint64_t PersistLogger::ParseEpochFromLogName(std::string name)
 
 bool PersistLogger::NeedOpenNewLogFile()
 {
-    if (0 == (KVDB::Instance()->GetLogCenter()->GetMaxLogId() % 2000)) {
+    if (0 == (KVDB::Instance()->GetLogCenter()->GetMaxLogId() % LOG_PER_FILE)) {
         return true;
     }
 
@@ -140,6 +141,7 @@ int PersistLogger::WriteLog(LogRecord *record)
         }
 
         err = mCurrentLog->AppendLogRecord(record);
+        //trace_log("write log, record: " << record->GetDumpString());
 
     } while(0);
 
