@@ -5,7 +5,9 @@ a repo to show how to syncing log and commit between servers
 - maybe a single key value database for long term
 
 # TODO
-- map or skiplist to hold table data in memory
-- simple api for database
-- data snapshot
 - database accross servers
+    - log sync
+    - 2pc
+    - paxo
+- data snapshot
+
