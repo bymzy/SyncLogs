@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <set>
 
 #include "include/LogicService.hpp"
 #include "include/Closure.hpp"
@@ -16,19 +17,23 @@
 /* handle kv request
  * hold request context
  * */
-class LogResponse
-{
-public:
-    LogResponse():mErr(0),mRequestId(0)
-    {}
-    ~LogResponse()
-    {}
+typedef struct _LogIdRecordPair {
+    uint64_t id;
+    void *param;
+}RequestIdLogRecord;
 
-public:
-    uint32_t mErr;
+typedef struct _LogResponse
+{
+    std::set<RequestIdLogRecord*> pairs;
+}LogResponse;
+
+/* read/write log and update datastore */
+typedef struct _GetReq
+{
+    std::string mTableName;
+    std::string mKey;
     uint64_t mRequestId;
-    std::string mValue;
-};
+}GetReq;
 
 class RequestCenter : public LogicService
 {
@@ -43,15 +48,17 @@ public:
 public:
     virtual bool Process(OperContext *ctx);
     void EnqueueKVRequest(KVRequest *request);
-    void ReceiveKVResponse(uint64_t requestId, uint32_t err,  const std::string& value);
+    void ReceiveKVResponse(LogResponse *resp);
 
 private:
     void HandleNewKVRequest(KVRequest *request);
     void HandleLocalRequest(LogContext *logCtx);
     void HandleKVResponse(LogResponse *resp);
+    void AppendGetRequest(GetReq *req);
 
 private:
     uint64_t mRequestID;
+    /* request id to request */
     std::map<uint64_t, KVRequest*> mRequests;
 };
 

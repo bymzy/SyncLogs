@@ -6,6 +6,10 @@
 #include <string>
 #include <stdint.h>
 #include <unistd.h>
+#include <assert.h>
+#include <stdlib.h>
+
+#include "Pch.hpp"
 
 class FileHandler
 {
@@ -14,6 +18,9 @@ public:
         mFileName(name), mOffset(0)
     {
         mFD = -1;
+        mBuffer = (char *)malloc(sizeof(char) * LOG_FILE_BUFFER_SIZE);
+        assert(NULL != mBuffer);
+        mWriteOffset = 0;
     }
     ~FileHandler()
     {
@@ -28,7 +35,7 @@ public:
     int WriteNBytes(const char *buf, size_t count);
     int ReadCString(char **buf, uint32_t& size);
     int Close();
-    int Sync();
+    int Flush();
     off_t GetOffset()
     {
         return mOffset;
@@ -44,9 +51,16 @@ public:
     }
 
 private:
+    int WriteToFile(const char *buf, size_t count);
+    int WriteAllBufferToFile();
+    int Sync();
+
+private:
     int mFD;
     std::string mFileName;
     off_t mOffset;
+    char *mBuffer;
+    uint32_t mWriteOffset;
 };
 
 #endif

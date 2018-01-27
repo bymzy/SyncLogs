@@ -170,6 +170,7 @@ public:
     int OpenFile(bool create);
     int AppendLogRecord(LogRecord *pLogRecord);
     int Close();
+    int Flush();
 
 private:
     int ValidateHeader();

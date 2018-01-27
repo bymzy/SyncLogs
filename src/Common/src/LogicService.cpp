@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include <time.h>
 #include "LogicService.hpp"
 #include "Log.hpp"
 
@@ -21,32 +22,53 @@ LogicService::Run()
 
     while (mRunning)
     {
-        pthread_mutex_lock(&mMutex);
-        while (mQueue.size() <= 0
-                && mRunning) {
-            pthread_cond_wait(&mCond, &mMutex);
-        }
-
-        /* now there is something in queure try process it */
-        ctxVec.assign(mQueue.begin(), mQueue.end());
-        mQueue.clear();
-
-        /* io driver will not be blocked when received msg */
-        pthread_mutex_unlock(&mMutex);
-
-        for (size_t i = 0;i < ctxVec.size();++i) {
-            ctx = ctxVec[i];
-            if (mRunning) {
-                if (!LogicService::Process(ctx)) {
-                    assert(Process(ctx));
-                }
-            } else {
-                ctx->SetMessage(NULL);
+        if (mSleepNanosec == 0) {
+            pthread_mutex_lock(&mMutex);
+            while (mQueue.size() <= 0
+                    && mRunning) {
+                pthread_cond_wait(&mCond, &mMutex);
             }
 
-            OperContext::DecRef(ctx);
-            ctx = NULL;
+            /* now there is something in queure try process it */
+            ctxVec.assign(mQueue.begin(), mQueue.end());
+            mQueue.clear();
+
+            /* io driver will not be blocked when received msg */
+            pthread_mutex_unlock(&mMutex);
+        } else {
+            struct timespec ts;
+            clock_gettime(CLOCK_MONOTONIC, &ts);
+            ts.tv_nsec += mSleepNanosec;
+            if (ts.tv_nsec > 1000000000) {
+                ts.tv_sec += 1;
+                ts.tv_nsec -= 1000000000;
+            }
+
+            pthread_mutex_lock(&mMutex);
+            pthread_cond_timedwait(&mCond, &mMutex, &ts);
+            ctxVec.assign(mQueue.begin(), mQueue.end());
+            mQueue.clear();
+            pthread_mutex_unlock(&mMutex);
         }
+
+        if (ctxVec.size() > 0) {
+            for (size_t i = 0;i < ctxVec.size();++i) {
+                ctx = ctxVec[i];
+                if (mRunning) {
+                    if (!LogicService::Process(ctx)) {
+                        assert(Process(ctx));
+                    }
+                } else {
+                    ctx->SetMessage(NULL);
+                }
+
+                OperContext::DecRef(ctx);
+                ctx = NULL;
+            }
+        } else if (mSleepNanosec > 0) {
+           Idle(); 
+        }
+
         ctxVec.clear();
     }
 

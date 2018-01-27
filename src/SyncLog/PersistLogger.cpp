@@ -88,7 +88,7 @@ std::string PersistLogger::Dec2HexString(uint32_t val, uint32_t bitCount)
     return temp2;
 }
 
-int PersistLogger::OpenNewLogFile()
+int PersistLogger::OpenNewLogFile(uint64_t logId)
 {
     if (NULL != mCurrentLog) {
         mCurrentLog->Close();
@@ -98,11 +98,12 @@ int PersistLogger::OpenNewLogFile()
 
     std::string logFileName = mLogDir 
         + Dec2HexString(KVDB::Instance()->GetEpoch(), 8)
-        + Dec2HexString(KVDB::Instance()->GetLogCenter()->GetMaxLogId() / LOG_PER_FILE, 8)
+        + Dec2HexString(logId / LOG_PER_FILE, 8)
         + ".log";
 
     mCurrentLog = new Log(logFileName);
-    debug_log("new log file name: " << logFileName);
+    debug_log("new log file name: " << logFileName
+            << ", max log id: " << KVDB::Instance()->GetLogCenter()->GetMaxLogId());
     return mCurrentLog->OpenFile(true);
 }
 
@@ -118,12 +119,11 @@ uint64_t PersistLogger::ParseEpochFromLogName(std::string name)
     return epoch;
 }
 
-bool PersistLogger::NeedOpenNewLogFile()
+bool PersistLogger::NeedOpenNewLogFile(uint64_t id)
 {
-    if (0 == (KVDB::Instance()->GetLogCenter()->GetMaxLogId() % LOG_PER_FILE)) {
+    if (0 == (id % LOG_PER_FILE)) {
         return true;
     }
-
     return false;
 }
 
@@ -132,10 +132,11 @@ int PersistLogger::WriteLog(LogRecord *record)
     int err =0;
 
     do {
-        if (NULL == mCurrentLog || NeedOpenNewLogFile()) {
-            err = OpenNewLogFile();
+        if (NULL == mCurrentLog || NeedOpenNewLogFile(record->GetLogId())) {
+            err = OpenNewLogFile(record->GetLogId());
             if (0 != err) {
                 error_log("open new log file failed, err: " << err);
+                assert(0);
                 break;
             }
         }
@@ -146,6 +147,11 @@ int PersistLogger::WriteLog(LogRecord *record)
     } while(0);
 
     return err;
+}
+
+int PersistLogger::FlushLog()
+{
+    return mCurrentLog->Flush();
 }
 
 

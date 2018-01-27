@@ -27,11 +27,12 @@ public:
 public:
     int RecoverFromLog();
     int WriteLog(LogRecord *record);
+    int FlushLog();
 
 private:
     int RedoLogFile(std::string logFileName);
-    int OpenNewLogFile();
-    bool NeedOpenNewLogFile();
+    int OpenNewLogFile(uint64_t id);
+    bool NeedOpenNewLogFile(uint64_t id);
     std::string Dec2HexString(uint32_t val, uint32_t bitCount);
     uint64_t ParseEpochFromLogName(std::string name);
 

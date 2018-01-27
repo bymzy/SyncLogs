@@ -36,6 +36,11 @@ int Log::OpenFile(bool create)
     return err;
 }
 
+int Log::Flush()
+{
+    return mFileHandler.Flush();
+}
+
 int Log::Close()
 {
     return mFileHandler.Close();

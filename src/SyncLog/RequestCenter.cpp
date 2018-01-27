@@ -20,15 +20,9 @@ void RequestCenter::EnqueueKVRequest(KVRequest *request)
     request->Wait();
 }
 
-void RequestCenter::ReceiveKVResponse(uint64_t requestId, uint32_t err,
-        const std::string& value)
+void RequestCenter::ReceiveKVResponse(LogResponse *resp)
 {
     OperContext *ctx = new OperContext(OperContext::OP_LOCAL);
-    LogResponse *resp = new LogResponse;
-    resp->mRequestId = requestId;
-    resp->mValue = value;
-    resp->mErr = err;
-
     LogContext *logCtx = new LogContext(LogContext::REQUEST_finish_data_request);
     logCtx->SetArg(resp);
     ctx->SetArg(logCtx);
@@ -37,35 +31,63 @@ void RequestCenter::ReceiveKVResponse(uint64_t requestId, uint32_t err,
     OperContext::DecRef(ctx);
 }
 
+void RequestCenter::AppendGetRequest(GetReq *req)
+{
+    OperContext *ctx = new OperContext(OperContext::OP_LOCAL);
+    LogContext *logCtx = new LogContext(LogContext::LOG_read_data);
+    logCtx->SetArg((void*)req);
+    ctx->SetArg((void*)logCtx);
+    Enqueue(ctx);
+    OperContext::DecRef(ctx);
+}
+
+
 void RequestCenter::HandleNewKVRequest(KVRequest *request)
 {
-    ++mRequestID;
-    mRequests.insert(std::make_pair(mRequestID, request));
 
     /* send request to logCenter
      * notice that read request is also haneld in logcenter
      * */
 
-    KVDB::Instance()->GetLogCenter()->ReceiveClientRequest(mRequestID, request->GetOpType(),
-            request->GetTableName(), request->GetKey(), request->GetValue());
+    if (request->GetOpType() == KVRequest::OP_get) {
+        request->mErr = KVDB::Instance()->GetDataStore()->Get(request->GetTableName(), request->GetKey(), request->mValue);
+        request->Signal();
+    } else {
+        ++mRequestID;
+        mRequests.insert(std::make_pair(mRequestID, request));
+        KVDB::Instance()->GetLogCenter()->ReceiveClientRequest(mRequestID, request->GetOpType(),
+                request->GetTableName(), request->GetKey(), request->GetValue());
+    }
 }
 
 void RequestCenter::HandleKVResponse(LogResponse *resp)
 {
     std::map<uint64_t, KVRequest*>::iterator iter;
     KVRequest *request = NULL;
+    std::set<RequestIdLogRecord*>::iterator setIter;
+    RequestIdLogRecord *pair = NULL;
+    LogRecord * record = NULL;
+    int err = 0;
 
-    iter = mRequests.find(resp->mRequestId);
-    if (iter != mRequests.end()) {
-        request = iter->second;
-        request->mErr = resp->mErr;
-        request->mValue = resp->mValue;
-        request->Signal();
-        mRequests.erase(resp->mRequestId);
-    } else {
-        error_log("Receive Log Response from LogCenter, but can not find request");
-        assert(0);
+    for (setIter = resp->pairs.begin(); setIter != resp->pairs.end(); ++setIter) {
+        pair = (RequestIdLogRecord*)(*setIter);
+
+        iter = mRequests.find(pair->id);
+        if (iter != mRequests.end()) {
+            request = iter->second;
+            record = (LogRecord*)pair->param;
+
+            err = KVDB::Instance()->GetLogCenter()->UpdateDataStore(record);
+            request->mErr = err;
+            request->Signal();
+
+            mRequests.erase(pair->id);
+        } else {
+            error_log("Receive Log Response from LogCenter, but can not find request");
+            assert(0);
+        }
     }
+
 
     delete resp;
 }

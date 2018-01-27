@@ -9,7 +9,8 @@
 
 class LogicService {
 public:
-    LogicService(std::string name): mName(name), mRunning(false)
+    LogicService(std::string name, uint64_t nanosec = 0): mName(name), mRunning(false),
+        mSleepNanosec(nanosec)
     {
         mThread = new Thread(name, false);
         pthread_mutexattr_t mutexattr;
@@ -94,6 +95,11 @@ public:
         mThread->Join();
     }
 
+    void Join()
+    {
+        mThread->Join();
+    }
+
     /* init is something you want to do befor thread running */
     virtual int Init()
     {
@@ -104,8 +110,13 @@ public:
     {
         return 0;
     }
+
+    virtual void Idle()
+    {
+    }
+
     /* run thread loop */
-    void Run();
+    virtual void Run();
     /* process ctx */
     virtual bool Process(OperContext *ctx);
     /* enqueue ctx to logic service */
@@ -132,6 +143,8 @@ public:
     Thread *mThread;
     /* logic service running */
     bool mRunning;
+    /* nanosec to sleep */
+    uint64_t mSleepNanosec;
 };
 
 

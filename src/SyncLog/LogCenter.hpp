@@ -10,18 +10,10 @@
 #include "DataStore.hpp"
 #include "LogContext.hpp"
 
-/* read/write log and update datastore */
-typedef struct _GetReq
-{
-    std::string mTableName;
-    std::string mKey;
-    uint64_t mRequestId;
-}GetReq;
-
 class LogCenter : public LogicService
 {
 public:
-    LogCenter(std::string name):LogicService(name)
+    LogCenter(std::string name):LogicService(name, 5000)
     {
     }
     ~LogCenter()
@@ -46,15 +38,19 @@ public:
         mMaxLogId = id;
     }
 
-private:
     int UpdateDataStore(LogRecord *record);
+private:
     int HandleWriteOper(LogRecord *record);
+    int FlushLog();
     void HandleRecoverLog(LogRecord *record);
-    void HandleReadData(GetReq *req);
-    void AppendGetRequest(GetReq *req);
+    void Idle();
 
 private:
+    /* logid to requestid */
     std::map<uint64_t, uint64_t> mLogId2RequestId;
+
+    /* logid 2 log record*/
+    std::map<uint64_t, LogRecord*> mToFlushLog;
     uint64_t mMaxLogId;
 };
 

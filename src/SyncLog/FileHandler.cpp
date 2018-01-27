@@ -46,9 +46,27 @@ int FileHandler::OpenFile(bool create)
     return err;
 }
 
+int FileHandler::Flush()
+{
+    int err = 0;
+    err = WriteAllBufferToFile();
+    assert(0 == err);
+
+    err = Sync();
+    assert(0  == err);
+
+    return err;
+}
+
 int FileHandler::Sync()
 {
-    return fsync(mFD);
+    int err = 0;
+    err = fsync(mFD);
+    if (err < 0) {
+        err = errno;
+    }
+
+    return err;
 }
 
 int FileHandler::Close()
@@ -59,8 +77,8 @@ int FileHandler::Close()
             break;
         }
 
-        err = fsync(mFD);
-        assert(err == 0);
+        err = Flush();
+        assert(0 == err);
 
         close(mFD);
         mFD = -1;
@@ -96,7 +114,40 @@ int FileHandler::ReadNBytes(char *buf, size_t toRead)
     return err;
 }
 
+int FileHandler::WriteAllBufferToFile()
+{
+    int err = 0;
+    err = WriteToFile(mBuffer, mWriteOffset);
+    assert(0 == err);
+    mWriteOffset = 0;
+
+    return err;
+}
+
 int FileHandler::WriteNBytes(const char *buf, size_t toWrite)
+{
+    do {
+        if (toWrite > LOG_FILE_BUFFER_SIZE) {
+            assert(0 == WriteAllBufferToFile());
+            assert(0 == WriteToFile(buf, toWrite));
+            break;
+        } 
+
+        if (LOG_FILE_BUFFER_SIZE < (mWriteOffset + toWrite)) {
+            assert(0 == WriteAllBufferToFile());
+        }
+
+        /*LOG_FILE_BUFFER_SIZE > (mWriteOffset + toWrite)*/
+
+        memcpy(mBuffer + mWriteOffset, buf, toWrite);
+        mWriteOffset += toWrite;
+
+    } while(0);
+
+    return 0;
+}
+
+int FileHandler::WriteToFile(const char *buf, size_t toWrite)
 {
     int err = 0;
     size_t writed = 0;
@@ -117,6 +168,10 @@ int FileHandler::WriteNBytes(const char *buf, size_t toWrite)
         mOffset += ret;
     }
 
+    if (0 != err) {
+        error_log("WriteToFie failed, err: " << err
+                << ", errstr: " << strerror(err));
+    }
     return err;
 }
 

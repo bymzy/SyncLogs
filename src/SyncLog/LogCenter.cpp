@@ -7,6 +7,7 @@
 #include "KVRequest.hpp"
 #include "LogContext.hpp"
 #include "KVDB.hpp"
+#include "Pch.hpp"
 
 void LogCenter::HandleLocalContext(LogContext *logCtx)
 {
@@ -16,9 +17,6 @@ void LogCenter::HandleLocalContext(LogContext *logCtx)
             break;
         case LogContext::LOG_write_log:
             HandleWriteOper((LogRecord*)logCtx->GetArg());
-            break;
-        case LogContext::LOG_read_data:
-            HandleReadData((GetReq*)logCtx->GetArg());
             break;
         default:
             assert(0);
@@ -105,28 +103,39 @@ int LogCenter::HandleWriteOper(LogRecord *record)
             break;
         }
 
-        /* step2
-         * update data store
-         * */
-        err = UpdateDataStore(record);
-        if (0 != err) {
-            break;
-        }
+        assert(0 == err);
 
+        mToFlushLog.insert(std::make_pair(record->GetLogId(), record));
+
+        if (mToFlushLog.size() > MAX_LOG_NUM_TO_FLUSH) {
+            err = FlushLog();
+            assert(0 == err);
+
+            LogResponse *resp = new LogResponse;
+            RequestIdLogRecord *pair = NULL;
+
+            std::map<uint64_t, LogRecord*>::iterator iter;
+            for (iter == mToFlushLog.begin(); iter != mToFlushLog.end(); ++iter) {
+                pair = new RequestIdLogRecord;
+                pair->id = iter->first;
+                pair->param = (void *)iter->second;
+
+                resp->pairs.insert(pair);
+            }
+            /* inform request center to response */
+            KVDB::Instance()->GetRequestCenter()->ReceiveKVResponse(resp);
+
+            mToFlushLog.clear();
+        }
 
     } while(0);
 
-    /* step3
-     * send response
-     * */
-    std::map<uint64_t, uint64_t>::iterator iter;
-    iter = mLogId2RequestId.find(record->GetLogId());
-    assert(iter != mLogId2RequestId.end());
+    return err;
+}
 
-    KVDB::Instance()->GetRequestCenter()->ReceiveKVResponse(iter->second,
-            err, "");
-
-    delete record;
+int LogCenter::FlushLog()
+{
+    int err = KVDB::Instance()->GetPersistLogger()->FlushLog();
     return err;
 }
 
@@ -146,26 +155,11 @@ uint64_t LogCenter::GenerateLogId()
     return ++mMaxLogId;
 }
 
-void LogCenter::AppendGetRequest(GetReq *req)
-{
-    OperContext *ctx = new OperContext(OperContext::OP_LOCAL);
-    LogContext *logCtx = new LogContext(LogContext::LOG_read_data);
-    logCtx->SetArg((void*)req);
-    ctx->SetArg((void*)logCtx);
-    assert(Enqueue(ctx));
-    OperContext::DecRef(ctx);
-}
-
 int LogCenter::ReceiveClientRequest(uint64_t requestId, uint32_t opType,
         std::string tableName, std::string key, std::string value)
 {
     if (opType == KVRequest::OP_get) {
-        GetReq *req = new GetReq;
-        req->mTableName = tableName;
-        req->mKey = key;
-        req->mRequestId = requestId;
-
-        AppendGetRequest(req);
+        assert(0);
     } else {
         uint64_t logId = GenerateLogId();
         FileLogRecordBody *body = new FileLogRecordBody;
@@ -187,18 +181,32 @@ int LogCenter::ReceiveClientRequest(uint64_t requestId, uint32_t opType,
     return 0;
 }
 
-void LogCenter::HandleReadData(GetReq *req)
+void LogCenter::Idle()
 {
     int err = 0;
-    std::string value;
-    err = KVDB::Instance()->GetDataStore()->Get(req->mTableName,
-            req->mKey, value);
-    if (0 != err) {
-        error_log("KVDB get failed, err: " << err);
-    }
+    if (mToFlushLog.size() > 0) {
+        err = FlushLog();
+        assert(0 == err);
 
-    KVDB::Instance()->GetRequestCenter()->ReceiveKVResponse(req->mRequestId,
-            err, value);
+        LogResponse *resp = new LogResponse;
+        RequestIdLogRecord *pair = NULL;
+        std::map<uint64_t, uint64_t>::iterator index;
+
+        std::map<uint64_t, LogRecord*>::iterator iter;
+        for (iter = mToFlushLog.begin(); iter != mToFlushLog.end(); ++iter) {
+            pair = new RequestIdLogRecord;
+            index = mLogId2RequestId.find(iter->first);
+            assert(index != mLogId2RequestId.end());
+            pair->id = index->second;
+            pair->param = (void *)iter->second;
+
+            resp->pairs.insert(pair);
+        }
+        /* inform request center to response */
+        KVDB::Instance()->GetRequestCenter()->ReceiveKVResponse(resp);
+
+        mToFlushLog.clear();
+    }
 }
 
 
