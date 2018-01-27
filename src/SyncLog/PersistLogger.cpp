@@ -4,10 +4,9 @@
 #include "include/Log.hpp"
 #include "PersistLogger.hpp"
 #include "KVDB.hpp"
+#include "Pch.hpp"
 
 #include <iomanip>
-
-#define LOG_PER_FILE 5000
 
 int PersistLogger::RecoverFromLog()
 {

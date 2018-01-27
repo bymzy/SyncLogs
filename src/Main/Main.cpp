@@ -201,7 +201,7 @@ int main()
 
     std::vector<TestWorker*> vec;
     TestWorker * worker = NULL;
-    for (uint32_t i = 0; i < 10; ++i) {
+    for (uint32_t i = 0; i < 8; ++i) {
         worker = new TestWorker(i * 10000, (i + 1)* 10000);
         worker->Start();
         vec.push_back(worker);
@@ -213,7 +213,7 @@ int main()
     }
 
     end = time_now();
-    std::cout << std::endl << "total 100000 write costs " << (end - begin) << " usec " << std::endl;
+    std::cout << std::endl << "total 80000 write costs " << (end - begin) << " usec " << std::endl;
 
     KVDB::Instance()->Stop();
     g_logger->Stop();

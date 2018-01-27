@@ -47,6 +47,7 @@ public:
 
     int Stop()
     {
+        mLogCenter.DumpStats();
         mLogCenter.Stop();
         mRequestCenter.Stop();
 

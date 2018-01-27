@@ -13,7 +13,7 @@
 class LogCenter : public LogicService
 {
 public:
-    LogCenter(std::string name):LogicService(name, 5000)
+    LogCenter(std::string name):LogicService(name, 10000)
     {
     }
     ~LogCenter()
@@ -39,6 +39,8 @@ public:
     }
 
     int UpdateDataStore(LogRecord *record);
+    void DumpStats();
+
 private:
     int HandleWriteOper(LogRecord *record);
     int FlushLog();
@@ -52,6 +54,7 @@ private:
     /* logid 2 log record*/
     std::map<uint64_t, LogRecord*> mToFlushLog;
     uint64_t mMaxLogId;
+    uint32_t mFlushCount[50];
 };
 
 #endif //PROJECT_LOGCENTER_HPP

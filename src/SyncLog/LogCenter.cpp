@@ -187,6 +187,7 @@ void LogCenter::Idle()
     if (mToFlushLog.size() > 0) {
         err = FlushLog();
         assert(0 == err);
+        mFlushCount[mToFlushLog.size()]++;
 
         LogResponse *resp = new LogResponse;
         RequestIdLogRecord *pair = NULL;
@@ -206,6 +207,13 @@ void LogCenter::Idle()
         KVDB::Instance()->GetRequestCenter()->ReceiveKVResponse(resp);
 
         mToFlushLog.clear();
+    }
+}
+
+void LogCenter::DumpStats()
+{
+    for (uint32_t i = 0 ; i < 50; ++i) {
+        debug_log("commit log count: " << mFlushCount[i]);
     }
 }
 
