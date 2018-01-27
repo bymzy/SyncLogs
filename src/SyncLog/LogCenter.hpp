@@ -13,7 +13,7 @@
 class LogCenter : public LogicService
 {
 public:
-    LogCenter(std::string name):LogicService(name, 10000)
+    LogCenter(std::string name):LogicService(name, 5000)
     {
     }
     ~LogCenter()
