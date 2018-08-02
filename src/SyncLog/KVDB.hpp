@@ -5,15 +5,19 @@
 #ifndef PROJECT_KVDB_HPP
 #define PROJECT_KVDB_HPP
 
+#include <map>
+
 #include "LogCenter.hpp"
 #include "PersistLogger.hpp"
 #include "RequestCenter.hpp"
+#include "ConnectMgr.hpp"
 
 class KVDB
 {
 public:
     KVDB(std::string dbDir):mPersistLogger(dbDir),mDataStore(),
-        mLogCenter("LogCenter"), mRequestCenter("request center")
+        mLogCenter("LogCenter"), mRequestCenter("request center"),
+        mConnectMgr("Connect Mgr")
     {}
     ~KVDB()
     {}
@@ -38,11 +42,26 @@ public:
                 break;
             }
 
+            err = mConnectMgr.Start();
+            if (0 != err) {
+                break;
+            }
+
             NotifyNewEpoch();
 
         } while(0);
 
         return err;
+    }
+
+    void SetPeerInfo(std::map<uint32_t, PeerInfo> peerMap)
+    {
+        mConnectMgr.SetPeerInfo(peerMap);
+    }
+
+    void SetSelfSid(uint32_t sid)
+    {
+        mConnectMgr.SetSelfSid(sid);
     }
 
     int Stop()
@@ -51,10 +70,14 @@ public:
         mLogCenter.Stop();
         mRequestCenter.Stop();
 
+        /* TODO stop order */
+        mConnectMgr.Stop();
+
         return 0;
     }
 
 public:
+    /* TODO fix this singleton */
     static KVDB *Instance()
     {
         static KVDB kvdb("/tmp/log/");
@@ -112,6 +135,7 @@ private:
     DataStore mDataStore;
     LogCenter mLogCenter;
     RequestCenter mRequestCenter;
+    ConnectMgr mConnectMgr;
     uint64_t mDBEpoch;
 };
 
