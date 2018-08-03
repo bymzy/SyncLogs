@@ -72,6 +72,29 @@ int main()
 
     begin = time_now();
 
+
+    /* make peer info */
+    std::map<uint32_t , PeerInfo> peerMap;
+    PeerInfo info;
+    info.ip = "192.168.76.21";
+    info.port = 1001;
+    info.sid = 1;
+    info.connected = false;
+    info.connId = 0;
+
+    peerMap.insert(std::make_pair(1, info));
+
+    info.port = 1002;
+    info.sid = 2;
+    peerMap.insert(std::make_pair(2, info));
+
+    info.port = 1003;
+    info.sid = 3;
+    peerMap.insert(std::make_pair(3, info));
+
+    KVDB::Instance()->SetPeerInfo(peerMap);
+    KVDB::Instance()->SetSelfSid(1);
+
     KVDB::Instance()->Start();
     end = time_now();
     std::cout <<  "recover 100000 write costs " << (end - begin) << " usec " << std::endl;
@@ -201,8 +224,8 @@ int main()
 
     std::vector<TestWorker*> vec;
     TestWorker * worker = NULL;
-    for (uint32_t i = 0; i < 8; ++i) {
-        worker = new TestWorker(i * 10000, (i + 1)* 10000);
+    for (uint32_t i = 0; i < 1; ++i) {
+        worker = new TestWorker(i * 100000, (i + 1)* 100000);
         worker->Start();
         vec.push_back(worker);
     }
@@ -213,7 +236,7 @@ int main()
     }
 
     end = time_now();
-    std::cout << std::endl << "total 80000 write costs " << (end - begin) << " usec " << std::endl;
+    std::cout << std::endl << "total 100000 write costs " << (end - begin) << " usec " << std::endl;
 
     KVDB::Instance()->Stop();
     g_logger->Stop();
