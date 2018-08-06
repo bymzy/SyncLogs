@@ -115,9 +115,24 @@ public:
         return &mRequestCenter;
     }
 
+    ConnectMgr *GetConnectMgr()
+    {
+        return &mConnectMgr;
+    }
+
     uint64_t GetEpoch()
     {
         return mDBEpoch;
+    }
+    
+    uint32_t GetSelfSid()
+    {
+        return mConnectMgr.GetSelfSid();
+    }
+
+    uint64_t GetMaxLogId()
+    {
+        return mLogCenter.GetMaxLogId();
     }
 
     void SetEpoch(uint64_t epoch)

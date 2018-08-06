@@ -1,6 +1,35 @@
 
 
+#include "include/Context.hpp"
 #include "ConnectMgr.hpp"
+
+void ConnectMgr::SendMessage(uint64_t connId, Msg *msg)
+{
+    OperContext *ctx = new OperContext(OperContext::OP_SEND);
+    ctx->SetMessage(msg);
+    ctx->SetConnID(connId);
+    mNetService.Enqueue(ctx);
+    OperContext::DecRef(ctx);
+}
+
+int ConnectMgr::SendPeerMessage(uint32_t sid, Msg *msg)
+{
+    int err = 0;
+    std::map<uint32_t, PeerInfo>::iterator iter;
+    if (INVALID_SID == sid) {
+        iter = mPeers.begin();
+        for (;iter != mPeers.end(); ++iter) {
+            SendMessage(iter->second.connId, msg->Dup());
+        }
+        delete msg;
+        msg = NULL;
+    } else {
+        iter = mPeers.find(sid);
+        SendMessage(iter->second.connId, msg);
+    }
+
+    return err;
+}
 
 void ConnectMgr::CheckConnection()
 {

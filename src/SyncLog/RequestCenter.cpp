@@ -127,3 +127,13 @@ bool RequestCenter::Process(OperContext *ctx)
     return processed;
 }
 
+void RequestCenter::Idle()
+{
+    /* 判断Paxoser当前是否处于稳定状态，如果不是就开始进行选举 */
+    //debug_log("RequestCenter Idle");
+    if (mPaxoser.NeedElection()) {
+        mPaxoser.StartElection();
+    }
+}
+
+

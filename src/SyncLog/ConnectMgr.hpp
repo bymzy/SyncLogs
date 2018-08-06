@@ -7,6 +7,9 @@
 
 #include "include/LogicService.hpp"
 #include "include/NetService.hpp"
+#include "include/Msg.hpp"
+
+#define INVALID_SID 0xFFFFFFFF
 
 typedef struct _PeerInfo {
     std::string ip;
@@ -33,9 +36,9 @@ public:
     virtual void Idle();
     virtual int Init();
     virtual int Finit();
-
     virtual bool Process(OperContext *ctx);
 
+public:
     void SetPeerInfo(std::map<uint32_t, PeerInfo> peerMap)
     {
         assert(peerMap.size() % 2 == 1);
@@ -47,7 +50,14 @@ public:
         mSid = sid;
     }
 
+    uint32_t GetSelfSid()
+    {
+        return mSid;
+    }
+
     void CheckConnection();
+    int SendPeerMessage(uint32_t sid, Msg *msg);
+    void SendMessage(uint64_t connId, Msg *msg);
 
 public:
     NetService mNetService;

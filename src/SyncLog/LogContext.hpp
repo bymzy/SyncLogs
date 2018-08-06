@@ -52,6 +52,7 @@ public:
     uint32_t mCtxType;
 };
 
+
 #endif //PROJECT_LOGCONTEXT_HPP
 
 
