@@ -3,13 +3,20 @@
 #include "include/Context.hpp"
 #include "ConnectMgr.hpp"
 
-void ConnectMgr::SendMessage(uint64_t connId, Msg *msg)
+int ConnectMgr::SendMessage(uint64_t connId, Msg *msg)
 {
+    int err = 0;
     OperContext *ctx = new OperContext(OperContext::OP_SEND);
     ctx->SetMessage(msg);
     ctx->SetConnID(connId);
-    mNetService.Enqueue(ctx);
+    if (!mNetService.Enqueue(ctx)) {
+        delete msg;
+        ctx->SetMessage(NULL);
+        err = EAGAIN;
+    }
     OperContext::DecRef(ctx);
+
+    return err;
 }
 
 int ConnectMgr::SendPeerMessage(uint32_t sid, Msg *msg)
@@ -25,7 +32,7 @@ int ConnectMgr::SendPeerMessage(uint32_t sid, Msg *msg)
         msg = NULL;
     } else {
         iter = mPeers.find(sid);
-        SendMessage(iter->second.connId, msg);
+        err = SendMessage(iter->second.connId, msg);
     }
 
     return err;
@@ -43,6 +50,7 @@ void ConnectMgr::CheckConnection()
             /* re connect */
             /* do not connect myself */
 
+            debug_log("try re connect!");
             err = mNetService.StartConnectRemote(iter->second.ip, iter->second.port,
                     connId);
             if (0 == err) {
@@ -58,6 +66,7 @@ void ConnectMgr::CheckConnection()
 
 void ConnectMgr::Idle()
 {
+    debug_log("Idle Idle Idle");
     CheckConnection();
 }
 

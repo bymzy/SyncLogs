@@ -18,7 +18,7 @@ Paxoser::~Paxoser()
 int Paxoser::StartElection()
 {
     int err = 0;
-    error_log("try start election");
+    //debug_log("try start election");
 
     Msg *msg = new Msg;
     (*msg) << MsgType::p2p_elect_leader;
@@ -28,7 +28,10 @@ int Paxoser::StartElection()
 
     msg->SetLen();
 
-    KVDB::Instance()->GetConnectMgr()->SendMessage(INVALID_SID, msg);
+    err = KVDB::Instance()->GetConnectMgr()->SendPeerMessage(INVALID_SID, msg);
+    if (err != 0) {
+        error_log("SendPeerMessage failed, err: " << err);
+    }
 
     return err;
 }

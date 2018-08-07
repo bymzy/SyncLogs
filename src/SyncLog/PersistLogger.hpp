@@ -29,6 +29,14 @@ public:
     int WriteLog(LogRecord *record);
     int FlushLog();
 
+    void SetDir(std::string logDir)
+    {
+        mLogDir = logDir;
+        if (mLogDir[mLogDir.length() - 1] != '/') {
+            mLogDir.append("/");
+        }
+    }
+
 private:
     int RedoLogFile(std::string logFileName);
     int OpenNewLogFile(uint64_t id);

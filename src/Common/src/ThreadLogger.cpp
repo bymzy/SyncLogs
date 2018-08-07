@@ -9,8 +9,6 @@
 
 #include "ThreadLogger.hpp"
 
-static std::string LogDir = "/tmp/";
-
 int
 ThreadLogger::Init()
 {
@@ -23,7 +21,7 @@ ThreadLogger::Init()
     temp = localtime(&now);
     strftime(outstr, sizeof(outstr), "%Y-%m-%d_%H-%M-%S", temp);
 
-    std::string logFile= LogDir + mFileName  + "-" + outstr + ".log";
+    std::string logFile = mLogDir + mFileName  + "-" + outstr + ".log";
 
     /* open log file */
     mFileFd = open(logFile.c_str(), O_WRONLY | O_CREAT, 0777);

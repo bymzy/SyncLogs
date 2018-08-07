@@ -4,13 +4,13 @@
 #include "include/Log.hpp"
 #include "include/CRC.h"
 #include "include/ThreadLogger.hpp"
-#include "PersistLogger.hpp"
+#include "include/Util.hpp"
 
 #include <iostream>
 #include <vector>
 
 #include "KVDB.hpp"
-#include "include/Util.hpp"
+#include "PersistLogger.hpp"
 
 ThreadLogger *g_logger = NULL;
 
@@ -60,19 +60,24 @@ public:
     uint32_t mEnd;
 };
 
-int main()
+int main(int argc, char *argv[])
 {
     int err = 0;
     mycrc32_init();
-    g_logger = new ThreadLogger("SyncLog");
-    g_logger->Start();
 
     uint64_t begin = 0;
     uint64_t end = 0;
 
     begin = time_now();
 
+    KVDB::Instance()->Parse(argc, argv);
+    g_logger = new ThreadLogger("SyncLog", KVDB::Instance()->GetLogDir());
+    std::cout << "aaa" << std::endl;
+    std::cout << KVDB::Instance()->GetLogDir() << std::endl
+        << KVDB::Instance()->GetDataDir() << std::endl;
+    g_logger->Start();
 
+#if 0
     /* make peer info */
     std::map<uint32_t , PeerInfo> peerMap;
     PeerInfo info;
@@ -94,6 +99,7 @@ int main()
 
     KVDB::Instance()->SetPeerInfo(peerMap);
     KVDB::Instance()->SetSelfSid(1);
+#endif
 
     KVDB::Instance()->Start();
     end = time_now();
@@ -222,6 +228,7 @@ int main()
     std::cout << "100000 del costs " << (end - begin) << " usec "<< std::endl;
 #endif
 
+#if 0
     std::vector<TestWorker*> vec;
     TestWorker * worker = NULL;
     for (uint32_t i = 0; i < 1; ++i) {
@@ -237,6 +244,8 @@ int main()
 
     end = time_now();
     std::cout << std::endl << "total 100000 write costs " << (end - begin) << " usec " << std::endl;
+#endif
+    sleep(100000);
 
     KVDB::Instance()->Stop();
     g_logger->Stop();

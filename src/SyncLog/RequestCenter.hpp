@@ -39,7 +39,7 @@ typedef struct _GetReq
 class RequestCenter : public LogicService
 {
 public:
-    RequestCenter(std::string name): LogicService(name, 100000), mRequestID(0)
+    RequestCenter(std::string name): LogicService(name, 200000000), mRequestID(0)
     {
     }
     ~RequestCenter()

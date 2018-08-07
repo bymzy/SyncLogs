@@ -37,12 +37,24 @@ LogicService::Run()
             pthread_mutex_unlock(&mMutex);
         } else {
             struct timespec ts;
-            clock_gettime(CLOCK_MONOTONIC, &ts);
-            ts.tv_nsec += mSleepNanosec;
+            //clock_gettime(CLOCK_MONOTONIC, &ts);
+            clock_gettime(CLOCK_REALTIME, &ts);
+
+            ts.tv_sec += mSleepNanosec / 1000000000;
+            ts.tv_nsec += mSleepNanosec % 1000000000;
+
+#if 0
+            std::cerr << mSleepNanosec / 1000000000
+                << "@@" << mSleepNanosec % 1000000000 << std::endl;
+            std::cerr << ts.tv_sec << "-"<< ts.tv_nsec << "==" << ts2.tv_sec << "-" << ts2.tv_nsec << std::endl;
+#endif
+
+#if 0
             if (ts.tv_nsec > 1000000000) {
                 ts.tv_sec += 1;
                 ts.tv_nsec -= 1000000000;
             }
+#endif
 
             pthread_mutex_lock(&mMutex);
             pthread_cond_timedwait(&mCond, &mMutex, &ts);

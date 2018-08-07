@@ -6,6 +6,7 @@
 #define PROJECT_KVDB_HPP
 
 #include <map>
+#include <pthread.h>
 
 #include "LogCenter.hpp"
 #include "PersistLogger.hpp"
@@ -18,13 +19,20 @@ public:
     KVDB(std::string dbDir):mPersistLogger(dbDir),mDataStore(),
         mLogCenter("LogCenter"), mRequestCenter("request center"),
         mConnectMgr("Connect Mgr")
-    {}
+    {
+        pthread_mutexattr_t attr;
+        pthread_mutexattr_init(&attr);
+        pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+        pthread_mutex_init(&mMutex, &attr);
+        pthread_mutexattr_destroy(&attr);
+    }
     ~KVDB()
     {}
 
 public:
     int Start() 
     {
+        std::cout << "in start " << mDataDir << " " << mLogDir << std::endl;
         int err = 0;
         do {
             err = mLogCenter.Start();
@@ -37,17 +45,18 @@ public:
                 break;
             }
 
+            mPersistLogger.SetDir(mDataDir);
             err = mPersistLogger.RecoverFromLog();
             if (0 != err) {
                 break;
             }
 
-            err = mConnectMgr.Start();
+            err = mConnectMgr.StartWithoutNewThread();
             if (0 != err) {
                 break;
             }
 
-            NotifyNewEpoch();
+            //NotifyNewEpoch();
 
         } while(0);
 
@@ -77,11 +86,16 @@ public:
     }
 
 public:
-    /* TODO fix this singleton */
     static KVDB *Instance()
     {
-        static KVDB kvdb("/tmp/log/");
-        return &kvdb;
+        if (instance == NULL) {
+            pthread_mutex_lock(&mMutex);
+            if (instance == NULL) {
+                instance = new KVDB("/tmp/log");
+            }
+            pthread_mutex_unlock(&mMutex);
+        }
+        return instance;
     }
 
     int Recover()
@@ -93,6 +107,8 @@ public:
     {
         mRequestCenter.EnqueueKVRequest(request);
     }
+
+    int Parse(int argc, char *argv[]);
 
 public:
     DataStore* GetDataStore()
@@ -145,6 +161,16 @@ public:
         ++mDBEpoch;
     }
 
+    std::string GetLogDir()
+    {
+        return mLogDir;
+    }
+    
+    std::string GetDataDir()
+    {
+        return mDataDir;
+    }
+
 private:
     PersistLogger mPersistLogger;
     DataStore mDataStore;
@@ -152,6 +178,10 @@ private:
     RequestCenter mRequestCenter;
     ConnectMgr mConnectMgr;
     uint64_t mDBEpoch;
+    std::string mDataDir;
+    std::string mLogDir;
+    static pthread_mutex_t mMutex;
+    static KVDB *instance;
 };
 
 #endif //PROJECT_KVDB_HPP

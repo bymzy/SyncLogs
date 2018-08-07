@@ -18,6 +18,10 @@ public:
         /* logic error */
         E_CRC_CHECK_FAILED,
         E_BASE64_DECODE_FAILED,
+
+        /* Common error */
+        E_INVALID_CMD_LINE,
+        E_INVALID_CMD_LINE_SID,
     };
 };
 

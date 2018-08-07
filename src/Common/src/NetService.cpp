@@ -188,7 +188,7 @@ NetService::SendMsg(OperContext *ctx)
         iter = mConns.find(ctx->GetConnID());
         if (iter == mConns.end()) {
             delete ctx->GetMessage();
-            warn_log("send msg, but connection not found!");
+            //warn_log("send msg, but connection not found!");
             break;
         }
         

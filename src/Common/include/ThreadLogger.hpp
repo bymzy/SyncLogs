@@ -8,10 +8,13 @@
 
 class ThreadLogger : public LogicService {
 public:
-    ThreadLogger(std::string filename):
+    ThreadLogger(std::string filename, std::string logDir):
         LogicService("ThreaLogger"),
-        mFileName(filename), mLogCount(0), mFileFd(-1)
+        mFileName(filename), mLogDir(logDir), mLogCount(0), mFileFd(-1)
     {
+        if (mLogDir[mLogDir.length() - 1] != '/') {
+            mLogDir.append("/");
+        }
     }
 
     ~ThreadLogger()
@@ -30,6 +33,7 @@ private:
 
 private:
     std::string mFileName;
+    std::string mLogDir;
     uint32_t mLogCount;
     int mFileFd;
 };

@@ -23,7 +23,7 @@ class ConnectMgr : public LogicService
 {
 public:
     ConnectMgr(std::string name):
-        LogicService(name, 1000), mNetService(this, "NetService"),
+        LogicService(name, 100000000), mNetService(this, "NetService"),
         mSid(0)
     {
     }
@@ -57,7 +57,9 @@ public:
 
     void CheckConnection();
     int SendPeerMessage(uint32_t sid, Msg *msg);
-    void SendMessage(uint64_t connId, Msg *msg);
+
+private:
+    int SendMessage(uint64_t connId, Msg *msg);
 
 public:
     NetService mNetService;
