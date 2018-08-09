@@ -55,11 +55,17 @@ public:
         return mSid;
     }
 
+    uint32_t GetQuorum()
+    {
+        return mPeers.size() / 2 + 1;
+    }
+
     void CheckConnection();
     int SendPeerMessage(uint32_t sid, Msg *msg);
 
 private:
     int SendMessage(uint64_t connId, Msg *msg);
+    int SendMessageToSelf(Msg *msg);
 
 public:
     NetService mNetService;

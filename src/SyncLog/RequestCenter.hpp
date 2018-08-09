@@ -54,8 +54,11 @@ public:
 
 private:
     void HandleNewKVRequest(KVRequest *request);
-    void HandleLocalRequest(LogContext *logCtx);
     void HandleKVResponse(LogResponse *resp);
+
+    void HandleLocalRequest(LogContext *logCtx);
+    void HandleRemoteRequest(OperContext *ctx);
+
     void AppendGetRequest(GetReq *req);
 
 private:

@@ -23,6 +23,7 @@ int KVDB::Parse(int argc, char *argv[])
     parser.add<uint32_t>("sid", 's', "my sid", true);
     parser.add<std::string>("logdir", 'l', "log dir", true);
     parser.add<std::string>("datadir", 'a', "log dir", true);
+    parser.add<std::string>("workdir", 'w', "work dir", false);
     parser.add("daemon", 'd', "run as a daemon");
 
     std::stringstream ss;
@@ -113,16 +114,25 @@ int KVDB::Parse(int argc, char *argv[])
         mConnectMgr.SetPeerInfo(peerMap);
         mConnectMgr.SetSelfSid(sid);
 
-        std::string mDataDir = parser.get<std::string>("datadir");
-        std::string mLogDir = parser.get<std::string>("logdir");
+        mDataDir = parser.get<std::string>("datadir");
+        mLogDir = parser.get<std::string>("logdir");
+        mWorkDir = parser.get<std::string>("workdir");
+        if (mWorkDir.empty()) {
+            mWorkDir = "/";
+        }
 
         std::cout << mDataDir << std::endl
-            << mLogDir << std::endl;
+            << mLogDir << std::endl
+            << mWorkDir << std::endl;
+
         /* Daemon */
         if (parser.exist("daemon")) {
             std::cout << "run as a daemon!!!" << std::endl;
-            //daemon(0, 0);
+            daemon(0, 0);
         }
+
+        chdir(mWorkDir.c_str());
+
     } while(0);
 
     return err;

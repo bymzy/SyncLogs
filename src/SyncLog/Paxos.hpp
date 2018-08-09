@@ -10,15 +10,13 @@
  *
  * */
 
-class Proposer
-{
+class Msg;
 
-};
-
-class Acceptor
-{
-
-};
+typedef struct _Ele{
+    uint32_t sid;
+    uint64_t epoch;
+    uint64_t logId;
+} Leader;
 
 enum _Paxos_Role
 {
@@ -35,6 +33,9 @@ public:
 
 public:
     int StartElection();
+    int HandleElection(uint32_t sid, uint64_t epoch, uint64_t logId);
+    void ReceiveElectionMessage(Msg *msg);
+    void ReceiveElectionMessageRes(Msg *msg);
 
     bool IsLeader()
     {
@@ -48,8 +49,12 @@ public:
 
 public:
     int mPaxosRole;
-    Proposer * mProposer;
-    Acceptor * mAcceptor;
+    time_t mLastElectionSentTime;
+
+    uint32_t mElectionResCount;
+    uint32_t mElectionAccCount;
+    /* TODO should init to myself after recover */
+    Leader mLeader;
 };
 
 #endif

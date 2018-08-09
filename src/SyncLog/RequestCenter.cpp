@@ -5,6 +5,7 @@
 #include "RequestCenter.hpp"
 #include "LogContext.hpp"
 #include "KVDB.hpp"
+#include "MsgType.hpp"
 
 void RequestCenter::EnqueueKVRequest(KVRequest *request)
 {
@@ -110,12 +111,41 @@ void RequestCenter::HandleLocalRequest(LogContext *logCtx)
     delete logCtx;
 }
 
+void RequestCenter::HandleRemoteRequest(OperContext *ctx)
+{
+    Msg * msg = ctx->GetMessage();
+    int msgType;
+    (*msg) >> msgType;
+
+    trace_log("RequestCenter receive Message, type: " << msgType);
+
+    switch(msgType)
+    {
+        case MsgType::p2p_elect_leader:
+            mPaxoser.ReceiveElectionMessage(msg);
+            break;
+        case MsgType::p2p_elect_leader_res:
+            mPaxoser.ReceiveElectionMessageRes(msg);
+            break;
+        default:
+            warn_log("unknown message type: " << msgType);
+            break;
+    }
+
+    delete msg;
+    ctx->SetMessage(NULL);
+}
+
 bool RequestCenter::Process(OperContext *ctx)
 {
     bool processed = true;
     switch (ctx->GetType()) {
         case OperContext::OP_LOCAL:
             HandleLocalRequest((LogContext*)ctx->GetArg());
+            ctx->SetArg(NULL);
+            break;
+        case OperContext::OP_RECV:
+            HandleRemoteRequest(ctx);
             break;
         default:
             assert(0 && "invalid OperContext");
@@ -123,7 +153,6 @@ bool RequestCenter::Process(OperContext *ctx)
             break;
     }
 
-    ctx->SetArg(NULL);
     return processed;
 }
 

@@ -2,6 +2,7 @@
 
 #include "include/Context.hpp"
 #include "ConnectMgr.hpp"
+#include "KVDB.hpp"
 
 int ConnectMgr::SendMessage(uint64_t connId, Msg *msg)
 {
@@ -19,6 +20,22 @@ int ConnectMgr::SendMessage(uint64_t connId, Msg *msg)
     return err;
 }
 
+int ConnectMgr::SendMessageToSelf(Msg *msg)
+{
+    int err = 0;
+    OperContext *ctx = new OperContext(OperContext::OP_RECV);
+    ctx->SetMessage(msg);
+    ctx->SetConnID(0);
+    if (!KVDB::Instance()->GetRequestCenter()->Enqueue(ctx)) {
+        delete msg;
+        ctx->SetMessage(NULL);
+        err = EAGAIN;
+    }
+    OperContext::DecRef(ctx);
+
+    return err;
+}
+
 int ConnectMgr::SendPeerMessage(uint32_t sid, Msg *msg)
 {
     int err = 0;
@@ -26,13 +43,23 @@ int ConnectMgr::SendPeerMessage(uint32_t sid, Msg *msg)
     if (INVALID_SID == sid) {
         iter = mPeers.begin();
         for (;iter != mPeers.end(); ++iter) {
-            SendMessage(iter->second.connId, msg->Dup());
+            if (iter->second.sid != mSid) {
+                err = SendMessage(iter->second.connId, msg->Dup());
+            } else {
+                err = SendMessageToSelf(msg->Dup());
+            }
+
+            /* should not failed, once program is running for a while */
         }
         delete msg;
         msg = NULL;
     } else {
-        iter = mPeers.find(sid);
-        err = SendMessage(iter->second.connId, msg);
+        if (sid != mSid) {
+            iter = mPeers.find(sid);
+            err = SendMessage(iter->second.connId, msg);
+        } else {
+            err = SendMessageToSelf(msg);
+        }
     }
 
     return err;
@@ -113,6 +140,10 @@ bool ConnectMgr::Process(OperContext * ctx)
     {
         case OperContext::OP_DROP:
             /* TODO */
+            debug_log("drop message not handled!!!");
+            break;
+        case OperContext::OP_RECV:
+            KVDB::Instance()->GetRequestCenter()->Enqueue(ctx);
             break;
         default:
             processed = false;

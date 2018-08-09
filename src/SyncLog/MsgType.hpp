@@ -10,8 +10,17 @@ public:
          * 4 bytes sid
          * 8 bytes max logid 
          * 8 bytes epoch 
+         *
+         * one peer try announcement that he is the leader
          * */
         p2p_elect_leader = 1,
+
+        /* 4 bytes msg type
+         * 4 bytes err
+         * 
+         * answer to leader announcement
+         * */
+        p2p_elect_leader_res,
     };
 };
 

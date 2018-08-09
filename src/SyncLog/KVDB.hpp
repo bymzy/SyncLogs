@@ -171,6 +171,11 @@ public:
         return mDataDir;
     }
 
+    std::string GetWorkDir()
+    {
+        return mWorkDir;
+    }
+
 private:
     PersistLogger mPersistLogger;
     DataStore mDataStore;
@@ -180,6 +185,7 @@ private:
     uint64_t mDBEpoch;
     std::string mDataDir;
     std::string mLogDir;
+    std::string mWorkDir;
     static pthread_mutex_t mMutex;
     static KVDB *instance;
 };
