@@ -33,10 +33,29 @@ public:
 
 public:
     int StartElection();
-    int HandleElection(uint32_t sid, uint64_t epoch, uint64_t logId);
     void ReceiveElectionMessage(Msg *msg);
+    int HandleElection(uint32_t sid, uint64_t epoch, uint64_t logId);
     void ReceiveElectionMessageRes(Msg *msg);
 
+    void SendElectionAccept();
+    void ReceiveLeaderAcceptMessage(Msg *msg);
+    void ReceiveLeaderAccpetMessageRes(Msg *msg);
+
+    void PublishLeaderInfo();
+    void ReceiveLeaderPublishMessage(Msg *msg);
+    void ReceiveLeaderPublishMessageRes(Msg *msg);
+
+    void ResetCounter()
+    {
+        mElectionResCount = 0;
+        mElectionAccCount = 0;
+        mLeaderAcceptResCount = 0;
+        mLeaderAcceptSuccCount = 0;
+        mLeaderAcceptSent = false;
+        mLeaderPublished = false;
+    }
+
+public:
     bool IsLeader()
     {
         return (mPaxosRole == PAXOS_LEADER);
@@ -51,10 +70,22 @@ public:
     int mPaxosRole;
     time_t mLastElectionSentTime;
 
+    /* for leader announcement */
     uint32_t mElectionResCount;
     uint32_t mElectionAccCount;
-    /* TODO should init to myself after recover */
+
+    /* for leader accept */
+    uint32_t mLeaderAcceptResCount;
+    uint32_t mLeaderAcceptSuccCount;
+
+    bool mLeaderAcceptSent;
+    bool mLeaderPublished;
+
+    /* leader proposed by other peer */
     Leader mLeader;
+
+    /* proposed by myself */
+    Leader mProposedLeader;
 };
 
 #endif

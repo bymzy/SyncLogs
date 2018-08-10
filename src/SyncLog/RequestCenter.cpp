@@ -117,7 +117,7 @@ void RequestCenter::HandleRemoteRequest(OperContext *ctx)
     int msgType;
     (*msg) >> msgType;
 
-    trace_log("RequestCenter receive Message, type: " << msgType);
+    //trace_log("RequestCenter receive Message, type: " << msgType);
 
     switch(msgType)
     {
@@ -126,6 +126,18 @@ void RequestCenter::HandleRemoteRequest(OperContext *ctx)
             break;
         case MsgType::p2p_elect_leader_res:
             mPaxoser.ReceiveElectionMessageRes(msg);
+            break;
+        case MsgType::p2p_elect_accept_leader:
+            mPaxoser.ReceiveLeaderAcceptMessage(msg);
+            break;
+        case MsgType::p2p_elect_accept_leader_res:
+            mPaxoser.ReceiveLeaderAccpetMessageRes(msg);
+            break;
+        case MsgType::p2p_elect_leader_publish:
+            mPaxoser.ReceiveLeaderPublishMessage(msg);
+            break;
+        case MsgType::p2p_elect_leader_publish_res:
+            mPaxoser.ReceiveLeaderPublishMessageRes(msg);
             break;
         default:
             warn_log("unknown message type: " << msgType);
@@ -162,6 +174,8 @@ void RequestCenter::Idle()
     //debug_log("RequestCenter Idle");
     if (mPaxoser.NeedElection()) {
         mPaxoser.StartElection();
+    } else {
+        info_log("my paxos role is " << mPaxoser.mPaxosRole);
     }
 }
 

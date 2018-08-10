@@ -93,7 +93,7 @@ void ConnectMgr::CheckConnection()
 
 void ConnectMgr::Idle()
 {
-    debug_log("Idle Idle Idle");
+    //debug_log("Idle Idle Idle");
     CheckConnection();
 }
 
