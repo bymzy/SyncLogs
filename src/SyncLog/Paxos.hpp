@@ -82,10 +82,13 @@ public:
     bool mLeaderPublished;
 
     /* leader proposed by other peer */
-    Leader mLeader;
+    Leader mLeaderSeen;
 
-    /* proposed by myself */
-    Leader mProposedLeader;
+    /* leader accepted */
+    Leader mLeaderAccepted;
+
+    /* leader proposed by myself */
+    Leader mLeaderProposed;
 };
 
 #endif
