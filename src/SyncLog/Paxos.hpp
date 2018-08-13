@@ -46,15 +46,9 @@ public:
     void ReceiveLeaderPublishMessage(Msg *msg);
     void ReceiveLeaderPublishMessageRes(Msg *msg);
 
-    void ResetCounter()
-    {
-        mElectionResCount = 0;
-        mElectionAccCount = 0;
-        mLeaderAcceptResCount = 0;
-        mLeaderAcceptSuccCount = 0;
-        mLeaderAcceptSent = false;
-        mLeaderPublished = false;
-    }
+public:
+    void HandlePeerDrop(uint64_t sid);
+    void ResetElection();
 
 public:
     bool IsLeader()

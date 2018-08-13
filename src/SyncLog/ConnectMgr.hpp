@@ -61,7 +61,9 @@ public:
     }
 
     void CheckConnection();
+    void HandleDrop(uint64_t connId, uint64_t *pSid);
     int SendPeerMessage(uint32_t sid, Msg *msg);
+    uint32_t GetOnlinePeerCount();
 
 private:
     int SendMessage(uint64_t connId, Msg *msg);

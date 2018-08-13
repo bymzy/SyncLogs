@@ -60,6 +60,7 @@ private:
     void HandleRemoteRequest(OperContext *ctx);
 
     void AppendGetRequest(GetReq *req);
+    void HandleRemoteDrop(OperContext *ctx);
 
 private:
     uint64_t mRequestID;

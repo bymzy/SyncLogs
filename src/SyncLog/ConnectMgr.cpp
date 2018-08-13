@@ -133,14 +133,45 @@ int ConnectMgr::Finit()
     return err;
 }
 
+
+void ConnectMgr::HandleDrop(uint64_t connId, uint64_t *pSid)
+{
+    std::map<uint32_t, PeerInfo>::iterator iter = mPeers.begin();
+    for (;iter != mPeers.end(); ++iter) {
+        if (iter->second.connId == connId) {
+            iter->second.connected = false;
+            iter->second.connId = 0;
+            *pSid = iter->second.sid;
+            break;
+        }
+    }
+}
+
+uint32_t ConnectMgr::GetOnlinePeerCount()
+{
+    uint32_t count = 0;
+    std::map<uint32_t, PeerInfo>::iterator iter = mPeers.begin();
+    for (;iter != mPeers.end(); ++iter) {
+        if (iter->second.connected == true) {
+            ++count;
+        }
+    }
+
+    return count;
+}
+
 bool ConnectMgr::Process(OperContext * ctx)
 {
     bool processed = true;
     switch (ctx->GetType())
     {
         case OperContext::OP_DROP:
-            /* TODO */
-            debug_log("drop message not handled!!!");
+            {
+                uint64_t *pSid = new uint64_t;
+                HandleDrop(ctx->mConnID, pSid);
+                ctx->SetArg((void *)pSid);
+                KVDB::Instance()->GetRequestCenter()->Enqueue(ctx);
+            }
             break;
         case OperContext::OP_RECV:
             KVDB::Instance()->GetRequestCenter()->Enqueue(ctx);

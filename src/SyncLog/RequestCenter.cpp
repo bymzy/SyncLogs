@@ -148,6 +148,14 @@ void RequestCenter::HandleRemoteRequest(OperContext *ctx)
     ctx->SetMessage(NULL);
 }
 
+void RequestCenter::HandleRemoteDrop(OperContext *ctx)
+{
+    uint64_t *pSid = (uint64_t *)ctx->GetArg();
+    mPaxoser.HandlePeerDrop(*pSid);
+    delete pSid;
+    ctx->SetArg(NULL);
+}
+
 bool RequestCenter::Process(OperContext *ctx)
 {
     bool processed = true;
@@ -158,6 +166,9 @@ bool RequestCenter::Process(OperContext *ctx)
             break;
         case OperContext::OP_RECV:
             HandleRemoteRequest(ctx);
+            break;
+        case OperContext::OP_DROP:
+            HandleRemoteDrop(ctx);
             break;
         default:
             assert(0 && "invalid OperContext");

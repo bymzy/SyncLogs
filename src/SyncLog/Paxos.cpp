@@ -39,6 +39,19 @@ void ResetLeader(Leader& l)
     l.logId = 0;
 }
 
+void Paxoser::ResetElection()
+{
+    mElectionResCount = 0;
+    mElectionAccCount = 0;
+    mLeaderAcceptResCount = 0;
+    mLeaderAcceptSuccCount = 0;
+    mLeaderAcceptSent = false;
+    mLeaderPublished = false;
+
+    ResetLeader(mLeaderSeen);
+    ResetLeader(mLeaderAccepted);
+}
+
 Paxoser::Paxoser():mPaxosRole(PAXOS_NONE)
 {
     mLastElectionSentTime = 0;
@@ -84,12 +97,8 @@ int Paxoser::StartElection()
          * 那么就重新发送Election 消息，可能之前被接收的Leader还没来得急发送Leader publish消息就挂了
          * */
 
-        ResetCounter();
-
+        ResetElection();
         mLastElectionSentTime = time(NULL);
-
-        ResetLeader(mLeaderSeen);
-        ResetLeader(mLeaderAccepted);
         ResetLeader(mLeaderElected);
 
         mLeaderProposed.sid = KVDB::Instance()->GetSelfSid();
@@ -294,6 +303,7 @@ void Paxoser::PublishLeaderInfo()
         mLeaderPublished = true;
         mLeaderElected = mLeaderProposed;
         info_log("i am leader!");
+        ResetElection();
 
         mPaxosRole = PAXOS_LEADER;
 
@@ -331,8 +341,7 @@ void Paxoser::ReceiveLeaderPublishMessage(Msg *msg)
    if (leader.sid != KVDB::Instance()->GetConnectMgr()->GetSelfSid()) {
        mPaxosRole = PAXOS_FOLLOWER;
        debug_log("i am follower!!");
-
-       /* TODO do we need to reset */
+       ResetElection();
        mLeaderElected = leader;
    }
 
@@ -351,6 +360,25 @@ void Paxoser::ReceiveLeaderPublishMessageRes(Msg *msg)
     (*msg) >> sid;
 
     info_log("receive leader publish res msg , peer " << sid);
+}
+
+void Paxoser::HandlePeerDrop(uint64_t sid)
+{
+    /* TODO, we may need to inform upper that leader is failed */
+    if (!NeedElection()) {
+        if (mLeaderElected.sid == sid) {
+            /* leader drop */
+            mPaxosRole = PAXOS_NONE;
+        }
+
+        if (mPaxosRole == PAXOS_LEADER) {
+            /* if not qurom peer alive, we need to leader LEADER state */
+            if (KVDB::Instance()->GetConnectMgr()->GetOnlinePeerCount() <
+                    KVDB::Instance()->GetConnectMgr()->GetQuorum()) {
+                mPaxosRole = PAXOS_NONE;
+            }
+        }
+    }
 }
 
 
