@@ -42,6 +42,7 @@ public:
     void ReceiveLeaderAccpetMessageRes(Msg *msg);
 
     void PublishLeaderInfo();
+    void SendLeaderInfo(uint32_t sid);
     void ReceiveLeaderPublishMessage(Msg *msg);
     void ReceiveLeaderPublishMessageRes(Msg *msg);
 
@@ -83,12 +84,12 @@ public:
 
     /* leader proposed by other peer */
     Leader mLeaderSeen;
-
     /* leader accepted */
     Leader mLeaderAccepted;
-
     /* leader proposed by myself */
     Leader mLeaderProposed;
+
+    Leader mLeaderElected;
 };
 
 #endif

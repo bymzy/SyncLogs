@@ -23,7 +23,7 @@ class ConnectMgr : public LogicService
 {
 public:
     ConnectMgr(std::string name):
-        LogicService(name, 100000000), mNetService(this, "NetService"),
+        LogicService(name, 500000000), mNetService(this, "NetService"),
         mSid(0)
     {
     }

@@ -175,7 +175,7 @@ void RequestCenter::Idle()
     if (mPaxoser.NeedElection()) {
         mPaxoser.StartElection();
     } else {
-        info_log("my paxos role is " << mPaxoser.mPaxosRole);
+        //info_log("my paxos role is " << mPaxoser.mPaxosRole);
     }
 }
 

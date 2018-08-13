@@ -32,6 +32,13 @@ bool operator < (const Leader &left, const Leader &right)
     return ret;
 }
 
+void ResetLeader(Leader& l)
+{
+    l.sid = 0;
+    l.epoch = 0;
+    l.logId = 0;
+}
+
 Paxoser::Paxoser():mPaxosRole(PAXOS_NONE)
 {
     mLastElectionSentTime = 0;
@@ -44,17 +51,12 @@ Paxoser::Paxoser():mPaxosRole(PAXOS_NONE)
     mLeaderAcceptSent = false;
     mLeaderPublished = true;
 
-    mLeaderSeen.sid = 0;
-    mLeaderSeen.epoch = 0;
-    mLeaderSeen.logId = 0;
+    ResetLeader(mLeaderSeen);
+    ResetLeader(mLeaderProposed);
+    ResetLeader(mLeaderAccepted);
+    ResetLeader(mLeaderElected);
 
-    mLeaderProposed.sid = 0;
-    mLeaderProposed.epoch = 0;
-    mLeaderProposed.logId = 0;
-
-    mLeaderAccepted.sid = 0;
-    mLeaderAccepted.epoch = 0;
-    mLeaderAccepted.logId = 0;
+    mLeaderElected.sid = 0;
 }
 
 Paxoser::~Paxoser()
@@ -86,13 +88,9 @@ int Paxoser::StartElection()
 
         mLastElectionSentTime = time(NULL);
 
-        mLeaderSeen.sid = 0;
-        mLeaderSeen.epoch = 0;
-        mLeaderSeen.logId = 0;
-
-        mLeaderAccepted.sid = 0;
-        mLeaderAccepted.epoch = 0;
-        mLeaderAccepted.logId = 0;
+        ResetLeader(mLeaderSeen);
+        ResetLeader(mLeaderAccepted);
+        ResetLeader(mLeaderElected);
 
         mLeaderProposed.sid = KVDB::Instance()->GetSelfSid();
         mLeaderProposed.epoch = KVDB::Instance()->GetEpoch();
@@ -129,6 +127,11 @@ void Paxoser::ReceiveElectionMessage(Msg *msg)
     /* if leader already selected */
     if (mPaxosRole == PAXOS_NONE) {
         HandleElection(remoteSid, remoteEpoch, remoteMaxLogId);
+    } else if (mPaxosRole == PAXOS_LEADER){
+        /* send him current leaer */
+        SendLeaderInfo(remoteSid);
+    } else {
+        /* follower will ignore this message */
     }
 }
 
@@ -282,11 +285,14 @@ void Paxoser::ReceiveLeaderAccpetMessageRes(Msg *msg)
     }
 }
 
+/* only leader will do this */
 void Paxoser::PublishLeaderInfo()
 {
     if (!mLeaderPublished &&
             mLeaderProposed.sid == KVDB::Instance()->GetConnectMgr()->GetSelfSid()) {
+
         mLeaderPublished = true;
+        mLeaderElected = mLeaderProposed;
         info_log("i am leader!");
 
         mPaxosRole = PAXOS_LEADER;
@@ -302,15 +308,32 @@ void Paxoser::PublishLeaderInfo()
     }
 }
 
+void Paxoser::SendLeaderInfo(uint32_t sid)
+{
+    Msg *msg = new Msg;
+    (*msg) << MsgType::p2p_elect_leader_publish;
+    (*msg) << mLeaderElected.sid;
+    (*msg) << mLeaderElected.epoch;
+    (*msg) << mLeaderElected.logId;
+    msg->SetLen();
+
+    KVDB::Instance()->GetConnectMgr()->SendPeerMessage(sid, msg);
+}
+
 void Paxoser::ReceiveLeaderPublishMessage(Msg *msg)
 {
-   (*msg) >> mLeaderSeen.sid;
-   (*msg) >> mLeaderSeen.epoch;
-   (*msg) >> mLeaderSeen.logId;
+   Leader leader;
+   (*msg) >> leader.sid;
+   (*msg) >> leader.epoch;
+   (*msg) >> leader.logId;
 
-   if (mLeaderSeen.sid != KVDB::Instance()->GetConnectMgr()->GetSelfSid()) {
+
+   if (leader.sid != KVDB::Instance()->GetConnectMgr()->GetSelfSid()) {
        mPaxosRole = PAXOS_FOLLOWER;
        debug_log("i am follower!!");
+
+       /* TODO do we need to reset */
+       mLeaderElected = leader;
    }
 
    Msg *resmsg = new Msg;
@@ -319,7 +342,7 @@ void Paxoser::ReceiveLeaderPublishMessage(Msg *msg)
 
    resmsg->SetLen();
    
-   KVDB::Instance()->GetConnectMgr()->SendPeerMessage(mLeaderSeen.sid, resmsg);
+   KVDB::Instance()->GetConnectMgr()->SendPeerMessage(leader.sid, resmsg);
 }
 
 void Paxoser::ReceiveLeaderPublishMessageRes(Msg *msg)
