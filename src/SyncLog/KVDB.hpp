@@ -18,7 +18,7 @@ class KVDB
 public:
     KVDB(std::string dbDir):mPersistLogger(dbDir),mDataStore(),
         mLogCenter("LogCenter"), mRequestCenter("request center"),
-        mConnectMgr("Connect Mgr")
+        mConnectMgr("Connect Mgr"), mIsLeader(false)
     {
         pthread_mutexattr_t attr;
         pthread_mutexattr_init(&attr);
@@ -103,12 +103,27 @@ public:
         return mPersistLogger.RecoverFromLog();
     }
 
-    void PostKVRequest(KVRequest *request)
+    int PostKVRequest(KVRequest *request)
     {
-        mRequestCenter.EnqueueKVRequest(request);
+        if (mIsLeader) {
+            mRequestCenter.EnqueueKVRequest(request);
+            return 0;
+        } else {
+            return EAGAIN;
+        }
     }
 
     int Parse(int argc, char *argv[]);
+
+    void ChangeToLeader()
+    {
+        mIsLeader = true;
+    }
+
+    void ChangeToNone()
+    {
+        mIsLeader = false;
+    }
 
 public:
     DataStore* GetDataStore()
@@ -186,6 +201,7 @@ private:
     std::string mDataDir;
     std::string mLogDir;
     std::string mWorkDir;
+    bool mIsLeader;
     static pthread_mutex_t mMutex;
     static KVDB *instance;
 };

@@ -77,7 +77,9 @@ LogicService::Run()
                 OperContext::DecRef(ctx);
                 ctx = NULL;
             }
-        } else if (mSleepNanosec > 0) {
+        }
+
+        if (mSleepNanosec > 0) {
            Idle(); 
         }
 

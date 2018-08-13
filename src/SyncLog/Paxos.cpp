@@ -306,6 +306,7 @@ void Paxoser::PublishLeaderInfo()
         ResetElection();
 
         mPaxosRole = PAXOS_LEADER;
+        KVDB::Instance()->ChangeToLeader();
 
         Msg msg;
         msg << MsgType::p2p_elect_leader_publish;
@@ -376,6 +377,7 @@ void Paxoser::HandlePeerDrop(uint64_t sid)
             if (KVDB::Instance()->GetConnectMgr()->GetOnlinePeerCount() <
                     KVDB::Instance()->GetConnectMgr()->GetQuorum()) {
                 mPaxosRole = PAXOS_NONE;
+                KVDB::Instance()->ChangeToNone();
             }
         }
     }
