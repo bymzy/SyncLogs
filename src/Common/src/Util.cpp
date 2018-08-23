@@ -93,6 +93,7 @@ char *writeString(char *buf, const std::string &data)
     return buf;
 }
 
+#ifndef __APPLE__
 uint64_t ntohll(const uint64_t input)
 {
     uint64_t rval;
@@ -115,6 +116,7 @@ uint64_t htonll(const uint64_t input)
     return (ntohll(input));
 }
 
+#endif
 uint64_t time_now()
 {
     struct timeval tv;

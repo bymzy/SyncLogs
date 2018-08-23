@@ -128,7 +128,9 @@ int KVDB::Parse(int argc, char *argv[])
         /* Daemon */
         if (parser.exist("daemon")) {
             std::cout << "run as a daemon!!!" << std::endl;
+#ifndef __APPLE__
             daemon(0, 0);
+#endif
         }
 
         chdir(mWorkDir.c_str());

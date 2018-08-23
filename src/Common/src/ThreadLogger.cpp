@@ -16,6 +16,7 @@ ThreadLogger::Init()
     char outstr[20];
     memset(outstr, 0, 100);
     struct tm *temp;
+
     time_t now = time(NULL);
 
     temp = localtime(&now);
@@ -76,11 +77,20 @@ ThreadLogger::WriteLog(std::string log)
     struct timeval now2;
     gettimeofday(&now2, NULL);
     memset(usec, 0, 9);
-    sprintf(usec, ".%ld ", now2.tv_usec);
+    sprintf(usec, ".%d ", now2.tv_usec);
 
     /* get thread LWP id */
+#ifndef __APPLE__
     pid_t pid = syscall(SYS_gettid);
-    std::string threadStr = "- LWP: " + i2s(pid) + " ";
+#else
+    pthread_t pid = pthread_self();
+#endif
+
+    std::stringstream ss;
+    ss << "- LWP: " << pid <<" ";
+    std::string threadStr;
+    ss >> threadStr;
+    //std::string threadStr = "- LWP: " + i2s(pid) + " ";
 
     log = std::string(outstr) + std::string(usec) + threadStr + log;
 

@@ -337,10 +337,10 @@ public:
     }
 
     /* pre recv the lenth to recv */
-    int PreRecv(uint32_t& len)
+    int PreRecv(int& len)
     {
         int err = 0;
-        uint32_t tempLen = 0;
+        int tempLen = 0;
         char buf[4] ;
 
         if (NoOK()) {
@@ -371,7 +371,7 @@ public:
     }
 
     /* try recv len bytes */
-    int Recv(char *buf, uint32_t len, uint32_t& received)
+    int Recv(char *buf, uint32_t len, int& received)
     {
         int err = 0;
         if (NoOK()) {

@@ -17,8 +17,10 @@ char *writeBytes(char *buf, const char *in, uint32_t len);
 char *writeCString(char *buf, const char *in, uint32_t len);
 char *writeString(char *buf, const std::string& data);
 
+#ifndef __APPLE__
 uint64_t ntohll(const uint64_t input);
 uint64_t htonll(const uint64_t input);
+#endif
 
 uint64_t time_now();
 

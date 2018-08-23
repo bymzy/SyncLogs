@@ -77,6 +77,7 @@ unsigned short GetPeerPort(struct sockaddr_in *paddr)
     return ntohs(paddr->sin_port);
 }
 
+#ifndef __APPLE__
 uint64_t ntohll(const uint64_t& input)
 {
     uint64_t rval;
@@ -98,4 +99,6 @@ uint64_t htonll(const uint64_t& input)
 {
     return (ntohll(input));
 }
+
+#endif
 

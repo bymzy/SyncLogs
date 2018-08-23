@@ -16,7 +16,9 @@ unsigned short GetPeerPort(struct sockaddr_in *paddr);
 std::string i2s(const int& i);
 int s2i(const std::string& s);
 
+#ifndef __APPLE__
 uint64_t ntohll(const uint64_t& input);
 uint64_t htonll(const uint64_t& input);
+#endif
 
 #endif

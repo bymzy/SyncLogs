@@ -2,6 +2,7 @@
 
 #ifndef __CLOSURE_HPP__
 #define __CLOSURE_HPP__
+#include <pthread.h>
 
 class SyncClosure
 {

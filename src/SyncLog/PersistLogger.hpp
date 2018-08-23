@@ -10,7 +10,7 @@ class PersistLogger
 {
 public:
     PersistLogger(std::string logDir):
-        mCurrentLog(NULL), mLogDir(logDir), mMaxLogId(0)
+        mCurrentLog(NULL), mLogDir(logDir)
     {
         if (mLogDir[mLogDir.length() - 1] != '/') {
             mLogDir.append("/");
@@ -47,7 +47,6 @@ private:
 private:
     Log *mCurrentLog;
     std::string mLogDir;
-    uint32_t mMaxLogId;
 };
 
 #endif

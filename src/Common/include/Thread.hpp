@@ -13,7 +13,7 @@ class Thread {
 public:
     typedef void *(*thread_func)(void *);
 public:
-    Thread(std::string name, bool detach): mName(name), mThread(-1), 
+    Thread(std::string name, bool detach): mName(name), mThread(0), 
         mDetach(detach)
     {
     }

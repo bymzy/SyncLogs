@@ -158,7 +158,7 @@ class Log
 {
 public:
     Log(std::string name, std::string magic = "", uint32_t version = 0):
-        mFileHandler(name), mMagic(magic), mVersion(version)
+        mFileHandler(name), mMagic(magic)
     {
     }
     ~Log()
@@ -179,7 +179,6 @@ private:
 private:
     FileHandler mFileHandler;
     std::string mMagic;
-    uint32_t mVersion;
 };
 
 #endif

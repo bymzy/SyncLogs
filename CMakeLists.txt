@@ -6,6 +6,11 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH  ${PROJECT_BINARY_DIR}/lib)
 
 include_directories(include)
-link_directories(/usr/local/lib ${PROJECT_SOURCE_DIR}/lib)
+
+IF (LINUX)
+    link_directories(/usr/local/lib ${PROJECT_SOURCE_DIR}/lib/linux)
+ELSEIF (APPLE)
+    link_directories(/usr/local/lib ${PROJECT_SOURCE_DIR}/lib/mac)
+ENDIF()
 
 add_subdirectory(src)

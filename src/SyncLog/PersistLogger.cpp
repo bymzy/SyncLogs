@@ -1,10 +1,15 @@
 
 
+//#ifdef _APPLE_
+#include <libgen.h>
+//#endif
+
 #include "include/DirUtil.hpp"
 #include "include/Log.hpp"
 #include "PersistLogger.hpp"
 #include "KVDB.hpp"
 #include "Pch.hpp"
+
 
 #include <iomanip>
 
@@ -109,7 +114,7 @@ int PersistLogger::OpenNewLogFile(uint64_t logId)
 uint64_t PersistLogger::ParseEpochFromLogName(std::string name)
 {
     uint64_t epoch;
-    std::string baseName(basename(name.c_str()));
+    std::string baseName(basename((char *)name.c_str()));
     std::string epochString = baseName.substr(0, 8);
     std::stringstream ss;
     ss << std::hex << epochString;

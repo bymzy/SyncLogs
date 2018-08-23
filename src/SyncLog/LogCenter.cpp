@@ -115,7 +115,7 @@ int LogCenter::HandleWriteOper(LogRecord *record)
             RequestIdLogRecord *pair = NULL;
 
             std::map<uint64_t, LogRecord*>::iterator iter;
-            for (iter == mToFlushLog.begin(); iter != mToFlushLog.end(); ++iter) {
+            for (iter = mToFlushLog.begin(); iter != mToFlushLog.end(); ++iter) {
                 pair = new RequestIdLogRecord;
                 pair->id = iter->first;
                 pair->param = (void *)iter->second;

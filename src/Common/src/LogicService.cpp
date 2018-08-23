@@ -13,12 +13,14 @@ LogicService::Run()
     OperContext *ctx= NULL;
     std::vector<OperContext *> ctxVec;
 
+    std::cout << "befor init " << std::endl;
     err = Init();
     if (0 != err) {
         std::cerr << "LogicService init failed, name: " << mName
                 << ", error: " << err;
         return;
     }
+    std::cout << "after init " << std::endl;
 
     while (mRunning)
     {

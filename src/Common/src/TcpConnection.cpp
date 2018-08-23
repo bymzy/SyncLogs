@@ -27,8 +27,8 @@ int
 TcpConnection::ReadData(int fd)
 {
     int err = 0;
-    uint32_t dataLen = 0;
-    uint32_t recved = 0;
+    int dataLen = 0;
+    int recved = 0;
     pthread_mutex_lock(&mMutex);
 
     do {
