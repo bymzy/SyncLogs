@@ -337,10 +337,10 @@ public:
     }
 
     /* pre recv the lenth to recv */
-    int PreRecv(int& len)
+    int PreRecv(uint32_t& len)
     {
         int err = 0;
-        int tempLen = 0;
+        uint32_t tempLen = 0;
         char buf[4] ;
 
         if (NoOK()) {

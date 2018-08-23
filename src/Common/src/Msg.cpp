@@ -21,7 +21,7 @@ Msg& Msg::operator << (const int& r)
 
 Msg& Msg::operator << (const std::string& r)
 {
-    this->operator<<(int(r.length()));
+    this->operator<<(r.length());
     return WriteByte(r.c_str(), r.length());
 }
 

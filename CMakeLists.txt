@@ -7,10 +7,10 @@ set(LIBRARY_OUTPUT_PATH  ${PROJECT_BINARY_DIR}/lib)
 
 include_directories(include)
 
-IF (LINUX)
-    link_directories(/usr/local/lib ${PROJECT_SOURCE_DIR}/lib/linux)
-ELSEIF (APPLE)
+IF (APPLE)
     link_directories(/usr/local/lib ${PROJECT_SOURCE_DIR}/lib/mac)
+ELSEIF (UNIX)
+    link_directories(/usr/local/lib ${PROJECT_SOURCE_DIR}/lib/linux)
 ENDIF()
 
 add_subdirectory(src)

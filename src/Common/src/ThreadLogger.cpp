@@ -77,7 +77,11 @@ ThreadLogger::WriteLog(std::string log)
     struct timeval now2;
     gettimeofday(&now2, NULL);
     memset(usec, 0, 9);
+#ifdef __LINUX__
+    sprintf(usec, ".%ld ", now2.tv_usec);
+#elif __APPLE__
     sprintf(usec, ".%d ", now2.tv_usec);
+#endif
 
     /* get thread LWP id */
 #ifndef __APPLE__
